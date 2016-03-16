@@ -1,0 +1,11 @@
+{
+
+    "Database": {
+                "Name": "cases",
+                "Host": "127.0.0.1",
+                "Port": 27017,
+                "User": "casesusr",
+                "Pwd": "Rx4awa#$Q",
+                "Timeout": 5
+    },
+}
