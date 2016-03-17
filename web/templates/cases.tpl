@@ -153,14 +153,14 @@
         // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
         var modal = $(this)
         modal.find('.modal-title').text('The "' + name + '" Details');
-        modal.find('.modal-body #casename').val(name);
+        modal.find('.modal-body #casename').text(name);
         modal.find('.modal-body #hexid').val(button.data('hexid'));
-        modal.find('.modal-body #caseid').val(button.data('caseid'));
-        modal.find('.modal-body #priority').val(button.data('prio'));
-        modal.find('.modal-body #automated').val(Boolean(button.data('auto')) ? 'Yes' : 'No');
+        modal.find('.modal-body #caseid').text(button.data('caseid'));
+        modal.find('.modal-body #priority').text(button.data('prio'));
+        modal.find('.modal-body #automated').text(Boolean(button.data('auto')) ? 'Yes' : 'No');
         modal.find('.modal-body #expected').val(button.data('expect'));
         modal.find('.modal-body #notes').val(button.data('notes'));
-        modal.find('.modal-body #viewreqid').val(button.data('reqid'));
+        modal.find('.modal-body #viewreqid').text(button.data('reqid'));
         modal.find('.modal-body #description').val(button.data('desc'));
         modal.find('.modal-body #created').text(button.data('created'));
         modal.find('.modal-body #modified').text(button.data('modified'));
@@ -360,31 +360,31 @@
           <div class="form-group form-group-sm">
               <label for="caseid" class="col-sm-3 control-label">Case ID</label>
               <div class="col-sm-9">
-                <input type="text" class="form-control" id="caseid" name="caseid" readonly>
+                <label class=" form-control" id="caseid" name="caseid">
               </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="casename" class="col-sm-3 control-label">Full Name</label>
                 <div class="col-sm-9">
-                  <input type="text" class="form-control" id="casename" name="casename" readonly>
+                    <label class="form-control" id="casename" name="casename">
                 </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="priority" class="col-sm-3 control-label">Priority</label>
                 <div class="col-sm-9">
-                  <input type="text" class="form-control" id="priority" name="priority" readonly>
+                    <label class="form-control" id="priority" name="priority">
                 </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="automated" class="col-sm-3 control-label">Automated</label>
                 <div class="col-sm-9">
-                  <input type="text" class="form-control" id="automated" name="automated" readonly>
+                    <label class="form-control" id="automated" name="automated">
                 </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="reqid" class="col-sm-3 control-label">Requirement ID</label>
                 <div class="col-sm-9">
-                  <input type="text" class="form-control" id="viewreqid" name="reqid" readonly>
+                    <label class="form-control" id="viewreqid" name="reqid">
                 </div>
             </div>
             <div class="form-group form-group-sm">

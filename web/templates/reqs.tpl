@@ -39,18 +39,11 @@
                 <table id="requirements" class="table table-stripped table-hover small">
 
                 <thead>
-                    {{template "table-header"}}
+                    {{template "req-table-header"}}
                 </thead>
 
                 <tfoot>
-                    {{template "table-header"}}
-                    <!--
-                    <tr class="bg-primary">
-                        <td colspan="6" class="text-right">
-                            <strong>{{.Num}} {{if eq .Num 1}} requirement {{else}} requirements {{end}} found.</strong>
-                        </td>
-                    </tr>
-                    -->
+                    {{template "req-table-header"}}
                 </tfoot>
     
                 <tbody>
@@ -138,11 +131,11 @@
         // binding library or other methods instead.
         var modal = $(this)
         modal.find('.modal-title').text('The "' + name + '" Details');
-        modal.find('.modal-body #name').val(name);
+        modal.find('.modal-body #name').text(name);
         modal.find('.modal-body #hexid').val(button.data('hexid'));
-        modal.find('.modal-body #short').val(button.data('short'));
-        modal.find('.modal-body #priority').val(button.data('prio'));
-        modal.find('.modal-body #reqstatus').val(button.data('reqstatus'));
+        modal.find('.modal-body #short').text(button.data('short'));
+        modal.find('.modal-body #priority').text(button.data('prio'));
+        modal.find('.modal-body #reqstatus').text(button.data('reqstatus'));
         modal.find('.modal-body #description').val(button.data('desc'));
         modal.find('.modal-body #created').text(button.data('created'));
         modal.find('.modal-body #modified').text(button.data('modified'));
@@ -242,17 +235,6 @@
                 <div class="col-sm-10">
                 <input type="hidden"  id="reqstatus" name="reqstatus" value="New">
                     <label  class="form-control">New</label>
-
-                <!--
-                <select class="form-control" id="reqstatus" name="reqstatus" required>
-                    <option selected>New</option>
-                    <option>Acknowledged</option>
-                    <option>Pending</option>
-                    <option>Approved</option>
-                    <option>Rejected</option>
-                    <option>Obsolete</option>
-                </select>
-                -->
                 </div>
             </div>
             <div class="form-group form-group-sm">
@@ -264,17 +246,6 @@
             </div>
       </form>
     </div>
-<!--
-    <div class="modal-footer">   
-    <div class="container-fluid">
-        <div class="row">
-            <button type="button" class="btn btn-primary col-md-offset-8 col-md-2" 
-                    onclick="postForm('add_req_form', '/requirement'); $('#addReqModal').modal('hide');">Add</button>
-            <button type="button" class="btn btn-default col-md-2" data-dismiss="modal">Cancel</button>
-        </div> 
-    </div> 
-    </div> 
--->
 </div>
 </div>
 </div>
@@ -299,25 +270,25 @@
           <div class="form-group form-group-sm">
               <label for="short" class="col-sm-2 control-label">Short Name</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="short" name="short" readonly>
+                    <label class="form-control" id="short" name="short">
               </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="name" class="col-sm-2 control-label">Full Name</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="name" name="name" readonly>
+                    <label class="form-control" id="name" name="name">
                 </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="priority" class="col-sm-2 control-label">Priority</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="priority" name="priority" readonly>
+                    <label class="form-control" id="priority" name="priority">
                 </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="reqstatus" class="col-sm-2 control-label">Status</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="reqstatus" name="reqstatus" readonly>
+                    <label class="form-control" id="reqstatus" name="reqstatus">
                 </div>
             </div>
             <div class="form-group form-group-sm">
@@ -335,15 +306,6 @@
             </div>
       </form>
     </div>
-  <!--  
-    <div class="modal-footer">   
-    <div class="container-fluid">
-        <div class="row">
-            <button type="button" class="btn btn-default col-md-offset-10 col-md-2" data-dismiss="modal">Cancel</button>
-        </div> 
-    </div> 
-    </div> 
-  --> 
 </div>
 </div>
 </div>
@@ -415,14 +377,6 @@
                   <textarea class="form-control" rows="5" id="description" name="description"></textarea>
                 </div>
             </div>
-<!--            <div class="form-group form-group-sm small">
-                <div class="form-inline">
-                <label for="created" class="control-label col-sm-2" >Created:</label>
-                <input type="text" id="created" name="created" class="form-control col-sm-3" readonly />
-                <label for="modified" class="control-label col-sm-2">Modified:</label>
-                <input type="text" id="modified" name="modified" class="form-control col-sm-3" readonly />
-                </div>
-            </div> -->
             <div class="form-group form-group-sm small">
                 <input type="hidden" name="created" id="created">
                 <input type="hidden" name="modified" id="modified">
@@ -468,7 +422,7 @@
 </div>
 {{end}}
 
-{{define "table-header"}}
+{{define "req-table-header"}}
                     <tr>
                         <th class="col-sm-1">#</th>
                         <th class="col-sm-1">Short</th>
