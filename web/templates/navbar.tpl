@@ -1,5 +1,5 @@
 {{define "navbar"}}
-    <nav class="navbar navbar-default" role="navigation">
+    <nav class="navbar navbar-default navbar-fixed-top" data-spy="affix" data-offset-top="55555" >
         <div class="container-fluid">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">

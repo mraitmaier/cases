@@ -1,4 +1,7 @@
 /* custom CCS for app */
+
+body { padding-top: 50px; }
+
 table { table-layout: fixed; }
 
 .tbl-single-row td { overflow: hidden; white-space: nowrap; }

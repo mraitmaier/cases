@@ -10,6 +10,8 @@
 
     <!-- Bootstrap -->
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/custom.css" rel="stylesheet">
 
   </head>
 
@@ -38,10 +40,8 @@
 
                 <thead>
                     <tr>
-                        <colgroup class="col-sm-2">
-                        <th>#</th>
-                        <th>Case ID</th>
-                        </colgroup>
+                        <th class="col-sm-1">#</th>
+                        <th class="col-sm-1">Case ID</th>
                         <th class="col-sm-4">Name</th>
                         <th class="col-sm-1">Priority</th>
                         <th class="col-sm-1">Automated</th>
@@ -63,10 +63,8 @@
                     {{$id := add $index 1}}
 
                     <tr class="tbl-single-row" id="case-row-{{$elem.ID.Hex}}">
-                        <colgroup>
                         <td>{{$id}}</td>
                         <td>{{$elem.CaseID}}</td>
-                        </colgroup>
                         <td>{{$elem.Name}}</td>
                         <td>{{$elem.Priority}}</td>
                         {{if $elem.Auto}}<td>Yes</td>{{else}}<td>No</td>{{end}}
@@ -106,13 +104,6 @@
                             </a>
                             </span>
                             &nbsp;&nbsp;
-<!--
-                            <a href="" data-toggle="tooltip" data-placement="up" title="Remove Test Case"
-                                onclick="deleteCase('{{$elem.Name}}', '{{$elem.ID.Hex}}');">
-                               <span class="glyphicon glyphicon-remove"></span>
-                            </a>
--->
-
                             <span data-toggle="tooltip" data-placement="up" title="Remove Test Case">
                             <a href ="" data-toggle="modal" data-target="#removeCaseModal"
                                              data-hexid="{{$elem.ID.Hex}}"
@@ -130,16 +121,6 @@
                 </tbody>
 
                 </table>
-
-                <ul class="pagination pagination-sm" id="cases_pagination">
-            <!--
-                    <li><a href="#">&laquo;</a></li>
-                    <li><a href="#">1</a></li>
-                    <li><a href="#">2</a></li>
-                    <li><a href="#">3</a></li>
-                    <li><a href="#">4</a></li>
-                    <li><a href="#">&raquo;</a></li>
-            -->
                 </ul>
     {{else}}
     <p><strong>No test cases found.</strong></p>
@@ -155,55 +136,19 @@
     {{template "remove_case_modal" }}
 <!-- End of Add modals -->
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!-- jQuery 2.0 (necessary for Bootstrap's JavaScript plugins) & other plugins -->
     <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/jquery.validate.min.js"></script>
-    <script src="static/js/additional-methods.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="static/js/jquery.dataTables.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/jquery.bootpag.min.js"></script>
+    <script src="static/js/dataTables.bootstrap.min.js"></script>
     <!-- Include custom application JS code -->
     <script src="static/js/cases.js"></script>
     <script>
-
-    var numOfCases = parseInt({{.Num}}); // Number of cases is given by backend
-    //var casesPerPage = 25;          // Number of cases displayed by page
-    var casesPerPage = 3;          // Number of cases displayed by page
-    // How many page are needed...
-    var numOfPages = (numOfCases % casesPerPage === 0) ? (numOfCases/casesPerPage) : (numOfCases/casesPerPage+1);
-
-    if (numOfPages > 1) {
-
-            $('.cases_pagination').bootpag({
-                total: numOfPages,
-                page: 1,
-                maxVisible: 5,
-                leaps: true,
-                firstLastUse: true,
-                first: '←',
-                last: '→',
-                wrapClass: 'pagination',
-            }).on("page", function(event, num){
-//                    $(".content4").html("Page " + num); // or some ajax content loading...
-            }); 
-
-  /*      
-        $('cases_pagination').append( 
-                $('<li>').append( $('<a>').attr('href', '#').attr('id', 'first').append('\xab') )
-        );
-
-
-        $('#or (var cnt = 1; cnt <= numOfPages; cnt++) {
-            $('#cases_pagination').append( $('<li>')
-                                  .append( $('<a>').attr('href', '#').attr('id', 'page'+cnt)
-                                  .append(cnt.toString())) );
-        }
-
-        $('#cases_pagination').append(
-                $('<li>').append( $('<a>').attr('href', '#').attr('id', 'last').append('\xbb') )
-        );
-*/
-    }
+    
+    // initialize dataTables jQuery plugin for better tables...
+    $(document).ready( function() {
+        $('#cases').DataTable();
+    });
 
     $('#viewCaseModal').on('show.bs.modal', function (event) {
 

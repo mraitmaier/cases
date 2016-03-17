@@ -10,6 +10,7 @@
 
     <!-- Bootstrap -->
     <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -29,7 +30,7 @@
     </div> <!-- row -->
 
     <div class="row col-md-offset-1 col-md-10" id="data">
-<p><b>Copyright 2015 by Miran Raitmaier. All Rights Reserved.</b></p>
+<p><b>Copyright 2015-2016 by Miran Raitmaier. All Rights Reserved.</b></p>
 <p>Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 </p>

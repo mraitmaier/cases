@@ -10,6 +10,8 @@
 
     <!-- Bootstrap -->
     <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/custom.css" rel="stylesheet">
 
   </head>
 
@@ -37,24 +39,18 @@
                 <table id="requirements" class="table table-stripped table-hover small">
 
                 <thead>
-                    <tr>
-                        <colgroup class="col-sm-2">
-                        <th>#</th>
-                        <th>Short</th>
-                        </colgroup>
-                        <th class="col-sm-6">Name</th>
-                        <th class="col-sm-1">Priority</th>
-                        <th class="col-sm-1">Status</th>
-                        <th class="col-sm-2 text-right">Actions</th>
-                    </tr>
+                    {{template "table-header"}}
                 </thead>
 
                 <tfoot>
+                    {{template "table-header"}}
+                    <!--
                     <tr class="bg-primary">
                         <td colspan="6" class="text-right">
                             <strong>{{.Num}} {{if eq .Num 1}} requirement {{else}} requirements {{end}} found.</strong>
                         </td>
                     </tr>
+                    -->
                 </tfoot>
     
                 <tbody>
@@ -62,10 +58,8 @@
                     {{$id := add $index 1}}
 
                     <tr class="tbl-single-row" id="req-row-{{$elem.ID.Hex}}">
-                        <colgroup>
                         <td>{{$id}}</td>
                         <td>{{$elem.Short}}</td>
-                        </colgroup>
                         <td>{{$elem.Name}}</td>
                         <td>{{$elem.Priority}}</td>
                         <td>{{$elem.Status}}</td>
@@ -98,9 +92,6 @@
                             </a>
                             </span>
                             &nbsp;&nbsp;
-                            <!--
-                                 onclick="deleteReq('{{$elem.Name}}', '{{$elem.ID.Hex}}');">
-                            -->
                             <span data-toggle="tooltip" data-placement="up" title="Remove Requirement">
                             <a href ="" data-toggle="modal" data-target="#removeReqModal" 
                                              data-hexid="{{$elem.ID.Hex}}"
@@ -114,8 +105,6 @@
                     {{end}}
                 </tbody>
                 </table>
-
-                <ul class="pagination pagination-sm" id="reqs_pagination"><!-- dynamic! --></ul> 
     {{end}}
             </div> <!-- data-list -->
         </div> <!-- row -->
@@ -127,81 +116,19 @@
 {{template "modify_req_modal"}}
 {{template "remove_req_modal"}}
 <!-- End of Add modals -->
-
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!-- include jQuery 2.x & plugins -->
     <script src="static/js/jquery.min.js"></script>
-    <script src="static/js/jquery.validate.min.js"></script>
-    <script src="static/js/additional-methods.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="static/js/jquery.dataTables.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
-    <script src="static/js/jquery.bootpag.min.js"></script>
+    <script src="static/js/dataTables.bootstrap.min.js"></script>
     <!-- Include custom application JS code -->
     <script src="static/js/cases.js"></script>
     <script>
 
-    var numOfReqs = parseInt({{.Num}}); // Number of requirements is given by backend
-    //var reqsPerPage = 20;             // Number of requirements displayed by page is currently static
-    var reqsPerPage = 5;                // Number of requirements displayed by page is currently static
-    // How many page are needed...
-    var numOfPages = (numOfReqs % reqsPerPage === 0) ? (numOfReqs/reqsPerPage) : (numOfReqs/reqsPerPage+1);
-
-    // Function that displays the page (the range of requirements) in the main table. 
-    // Page number is given...
-    var showReqsRange = function (table_id, pagenum) {
-
-        var start = ((pagenum - 1) * reqsPerPage) + 1;
-        var end = start + reqsPerPage;
-
-        var rows = $('#' +table_id + ' > tbody > tr');
-        var len = rows.length;
-
-        if (len > 0) {
-            for (var tr = 0; tr < len; tr++) {
-                if ((tr >= start) && (tr <= end)) {
-                    rows[tr].show();
-                } else {
-                    rows[tr].hide();
-                }
-            }
-        }
-    };
-
-    if (numOfPages > 1) {
-
-        $('#reqs_pagination').append( 
-                $('<li>').append( $('<a>').attr('href', '#').attr('id', 'first').append('\xab') )
-        );
-        $('#reqs_pagination #first').on('click', function(e) {
-            showReqsRange('requirements', 1);
-        });
-
-        for (var cnt = 1; cnt <= numOfPages; cnt++) {
-            var pageid = 'page' + cnt;
-            $('#reqs_pagination').append( 
-                                 $('<li>').append( $('<a>').attr('href', '#').attr('id', pageid) 
-                                 .append(cnt.toString())) 
-                                 );
-            $('#reqs_pagination #pageid').on('click', function(e) {
-                showReqsRange('requirements', cnt);
-            });
-        }
-
-        $('#reqs_pagination').append( 
-                $('<li>').append( $('<a>').attr('href', '#').attr('id', 'last').append('\xbb') )
-        );
-        $('#reqs_pagination #last').on('click', function(e) {
-            showReqsRange('requirements', numOfPages);
-        });
-
-    } else {
-
-        $('#reqs_pagination').append(
-            $('<li>').append( $('<a>').attr('href', '#').append('\xab') ),
-            $('<li>').append( $('<a>').attr('href', '#').append('1')),
-            $('<li>').append( $('<a>').attr('href', '#').append('\xbb') )
-        );
-
-    }
+    // initialize jQuery dataTables
+    $(document).ready( function () {
+        $('#requirements').DataTable();
+    } ); 
 
     $('#viewReqModal').on('show.bs.modal', function (event) {
 
@@ -536,3 +463,13 @@
 </div>
 {{end}}
 
+{{define "table-header"}}
+                    <tr>
+                        <th class="col-sm-1">#</th>
+                        <th class="col-sm-1">Short</th>
+                        <th class="col-sm-6">Name</th>
+                        <th class="col-sm-1">Priority</th>
+                        <th class="col-sm-1">Status</th>
+                        <th class="col-sm-2 text-right">Actions</th>
+                    </tr>
+{{end}}
