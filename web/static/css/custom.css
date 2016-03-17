@@ -1,0 +1,5 @@
+/* custom CCS for app */
+table { table-layout: fixed; }
+
+.tbl-single-row td { overflow: hidden; white-space: nowrap; }
+

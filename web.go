@@ -89,6 +89,7 @@ func registerHandlers(app *appinfo) {
 	r.Handle("/requirement", requirementHandler(app))
 	r.Handle("/requirement/{id}/{cmd}", requirementHandler(app))
 
+	r.Handle("/search", searchHandler(app))
 	r.Handle("/err404", err404Handler(app))
 	r.NotFoundHandler = err404Handler(app)
 	http.Handle("/", r) // this must be the last line in func...
@@ -120,15 +121,13 @@ func caseHandler(app *appinfo) http.Handler {
 		switch r.Method {
 
 		case "GET":
-			if err = caseHTTPGetHandler(w, r, app); err != nil {
-				//fmt.Printf("DEBUG: Error %q\n", err.Error())
+			if err = caseHTTPGetHandler("", w, r, app); err != nil {
 				Errorf(app.log, "Cases HTTP GET %s", err.Error())
 			}
 
 		case "POST":
 
 			if err = caseHTTPPostHandler(w, r, app); err != nil {
-				//fmt.Printf("DEBUG: Error POST req %q\n", err.Error())
 				Errorf(app.log, "Cases HTTP POST %s", err.Error())
 			}
 			// unconditionally reroute to main test cases page
@@ -275,13 +274,12 @@ func casesGetReqIDs(app *appinfo) []string {
 }
 
 // This is HTTP GET handler for test cases.
-func caseHTTPGetHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func caseHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	id := mux.Vars(r)["id"]
-
 	// If ID is empty, we render the default all-cases page
 	if id == "" {
-		c, err := app.dbconn.GetCases("")
+		c, err := app.dbconn.GetCases(qry)
 		if err != nil {
 			http.Redirect(w, r, "/err404", http.StatusFound)
 			return fmt.Errorf("Problem getting cases from DB: '%s'", err.Error())
@@ -297,25 +295,27 @@ func caseHTTPGetHandler(w http.ResponseWriter, r *http.Request, app *appinfo) er
             Ptype string
 			Reqs  []string
 			User  string
-		}{c, len(c), "reqs", req, UserName}
+		}{c, len(c), "cases", req, UserName}
 
 		return renderPage("cases", web, app, w, r)
 	}
+    return nil
 
+    /*
 	// otherwise case with given ID is obtained from DB and displayed
 	c, err := app.dbconn.GetCase(id)
 	if err != nil {
-		//http.Redirect(w, r, "/err404", http.StatusFound)
 		return fmt.Errorf("get a case from DB (ID='%s'): '%s'", id, err.Error())
 	}
 
 	// create ad-hoc struct to be sent to page template
 	var web = struct {
 		Case *Case
-		User string
+		User strin
 	}{c, UserName}
 
 	return renderPage("case", web, app, w, r)
+    */
 }
 
 // This is the default root and index.html handler function.
@@ -361,7 +361,7 @@ func requirementHandler(app *appinfo) http.Handler {
 		switch r.Method {
 
 		case "GET":
-			if err = reqHTTPGetHandler(w, r, app); err != nil {
+			if err = reqHTTPGetHandler("", w, r, app); err != nil {
 				//fmt.Printf("Error %q\n", err.Error())
 				Errorf(app.log, "Requirement HTTP GET %s", err.Error())
 			}
@@ -451,15 +451,16 @@ func parseReqFormValues(r *http.Request) *Requirement {
 }
 
 // This is HTTP GET handler for requirements.
-func reqHTTPGetHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func reqHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	id := mux.Vars(r)["id"]
 
 	// If ID is empty, we render the default all-requirements page
 	if id == "" {
 
-		req, err := app.dbconn.GetRequirements("")
+		reqs, err := app.dbconn.GetRequirements(qry)
 		if err != nil {
+            fmt.Printf("DEBUG req HTTP GET handler err=%q\n", err.Error()) // DEBUG
 			http.Redirect(w, r, "/err404", http.StatusFound)
 			return fmt.Errorf("Problem getting requirements from DB: '%s'", err.Error())
 		}
@@ -468,12 +469,12 @@ func reqHTTPGetHandler(w http.ResponseWriter, r *http.Request, app *appinfo) err
 			Reqs []*Requirement
 			Num  int
             Ptype string
-			User string
-		}{req, len(req), "cases", UserName}
+		}{reqs, len(reqs), "reqs"}
 
 		return renderPage("requirements", web, app, w, r)
 	}
-
+    return nil
+    /*
 	// otherwise case with given ID is obtained from DB and displayed
 	req, err := app.dbconn.GetRequirement(id)
 	if err != nil {
@@ -486,4 +487,54 @@ func reqHTTPGetHandler(w http.ResponseWriter, r *http.Request, app *appinfo) err
 	}{req, UserName}
 
 	return renderPage("requirements", web, app, w, r)
+    */
+}
+// This is handler that handler the "/search" URL. It accepts only POST requests.
+func searchHandler(app *appinfo) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			var err error
+			switch r.Method {
+
+			case "POST":
+				if err = searchHTTPPostHandler(w, r, app); err != nil {
+					//app.Log.Error(fmt.Sprintf("Search HTTP POST %s", err.Error()))
+				}
+
+			default:
+				// otherwise just display main 'index' page
+				if err := renderPage("index", nil, app, w, r); err != nil {
+					//app.Log.Error(fmt.Sprintf("Index HTTP GET %s", err.Error()))
+					return
+				}
+			}
+	})
+}
+
+// This is HTTP POST handler for searches.
+func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+
+	qry := strings.TrimSpace(r.FormValue("search-string"))
+	ptype := strings.TrimSpace(r.FormValue("search-type"))
+
+	// if type is empty, we cannot do anything with it, just redirect to index page
+	if ptype == "" {
+	    return renderPage("index", nil, app, w, r)
+	}
+
+    var err error
+	switch strings.ToLower(ptype) {
+
+	case "cases":
+		err = caseHTTPGetHandler(qry, w, r, app)
+
+	case "reqs":
+		err = reqHTTPGetHandler(qry, w, r, app)
+
+	default:
+		// just render the /index page
+	    renderPage("index", nil, app, w, r)
+    }
+	return err
 }

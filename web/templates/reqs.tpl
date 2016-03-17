@@ -14,7 +14,7 @@
   </head>
 
   <body>
-    {{template "navbar" .User}}
+    {{template "navbar" .Ptype}}
 
     <div class="container-fluid">
         <div class="row col-md-offset-1 col-md-10" id="header">
@@ -61,7 +61,7 @@
                     {{range $index, $elem := .Reqs}}
                     {{$id := add $index 1}}
 
-                    <tr id="req-row-{{$elem.ID.Hex}}">
+                    <tr class="tbl-single-row" id="req-row-{{$elem.ID.Hex}}">
                         <colgroup>
                         <td>{{$id}}</td>
                         <td>{{$elem.Short}}</td>

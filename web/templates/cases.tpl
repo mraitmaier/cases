@@ -14,7 +14,7 @@
   </head>
 
   <body>
-    {{template "navbar" .User}}
+    {{template "navbar" .Ptype}}
 
     <div class="container-fluid">
         <div class="row col-md-offset-1 col-md-10" id="header">
@@ -62,7 +62,7 @@
                     {{range $index, $elem := .Cases}}
                     {{$id := add $index 1}}
 
-                    <tr id="case-row-{{$elem.ID.Hex}}">
+                    <tr class="tbl-single-row" id="case-row-{{$elem.ID.Hex}}">
                         <colgroup>
                         <td>{{$id}}</td>
                         <td>{{$elem.CaseID}}</td>

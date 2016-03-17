@@ -12,9 +12,11 @@
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <form class="navbar-form navbar-left" role="search">
+
+                <form class="navbar-form navbar-left" role="search" method="post" action="/search">
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search">
+                        <input type="text" name="search-string" class="form-control" placeholder="Search">
+                        <input type="hidden" name="search-type" value="{{.}}">
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -22,7 +24,6 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="/case">Test Cases</a></li>
                     <li><a href="/requirement">Requirements</a></li>
-<!--                    <li><a href="#">Users</a></li>   -->
 
                     <li>
                         <a href="#" data-toggle="tooltip" data-placement="top" title="About">

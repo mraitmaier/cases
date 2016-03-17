@@ -76,7 +76,8 @@ func (cn *MongoDBConnection) Connect(dburl string, timeout int) error {
 		return err
 	}
 	cn.Session = sess
-	return err
+
+	return cn.EnsureIndexes()
 }
 
 // ConnectDB connects to MongoDB database server with given information and timeout (when connection cannot be established).
@@ -93,7 +94,39 @@ func ConnectDB(cfg *Cfg) (*MongoDBConnection, error) {
 	}
 	cn.Session = sess
 	cn.Name = cfg.DB.Name
-	return cn, nil
+
+    err = cn.EnsureIndexes()
+	return cn, err
+}
+
+//
+func (cn *MongoDBConnection) EnsureIndexes() error {
+
+    // wildcard text index is common to all collection
+    wcix := mgo.Index{ Key: []string{"$text:$**"}, Background: true, Sparse: true }
+
+    var err error
+    coll := cn.Session.DB(cn.Name).C("cases")
+    cix1 := mgo.Index{ Key: []string{"priority"}, Background: true, Sparse: true }
+    cix2 := mgo.Index{ Key: []string{"auto"}, Background: true, Sparse: true }
+    cix3 := mgo.Index{ Key: []string{"reqid"}, Background: true, Sparse: true }
+    cix4 := mgo.Index{ Key: []string{"caseid"}, Unique: true, Background: true, Sparse: true }
+    err = coll.EnsureIndex(cix1)
+    err = coll.EnsureIndex(cix2)
+    err = coll.EnsureIndex(cix3)
+    err = coll.EnsureIndex(cix4)
+    err = coll.EnsureIndex(wcix)
+
+    coll = cn.Session.DB(cn.Name).C("requirements")
+    rix3 := mgo.Index{ Key: []string{"short"}, Unique:true, Background: true, Sparse: true }
+    rix1 := mgo.Index{ Key: []string{"priority"}, Background: true, Sparse: true }
+    rix2 := mgo.Index{ Key: []string{"status" }, Background: true, Sparse: true }
+    err = coll.EnsureIndex(rix1)
+    err = coll.EnsureIndex(rix2)
+    err = coll.EnsureIndex(rix3)
+    err = coll.EnsureIndex(wcix)
+
+    return err
 }
 
 // CloseDB safely closes the session to MongoDB database server and updates its internals.
@@ -157,7 +190,8 @@ func (cn *MongoDBConnection) GetCases(srch string) ([]*Case, error) {
 	dblock.Lock()
 	defer dblock.Unlock()
 
-    cases := make([]*Case, 0)
+    //cases := make([]*Case, 0)
+    var cases []*Case
 	var err error
 	coll := cn.Session.DB(cn.Name).C("cases")
 	if srch == "" {
@@ -260,8 +294,8 @@ func (cn *MongoDBConnection) GetRequirements(srch string) ([]*Requirement, error
 	dblock.Lock()
 	defer dblock.Unlock()
 
-	//var reqs []*Requirement
-    reqs := make([]*Requirement, 0)
+	var reqs []*Requirement
+    //reqs := make([]*Requirement, 0)
 	var err error
 	coll := cn.Session.DB(cn.Name).C("requirements")
 	if srch == "" {

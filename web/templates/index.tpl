@@ -19,7 +19,7 @@
     <![endif]-->
   </head>
   <body>
-    {{template "navbar" .}}
+    {{template "navbar" ""}}
 
     <div class="container-fluid">
         <div class="row col-md-offset-1 col-md-10" id="header">
