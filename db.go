@@ -7,7 +7,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"sync"
 	"time"
-	//"strconv"
 )
 
 const (
@@ -66,7 +65,7 @@ func createMongoConnectString(cfg *Cfg) string {
 	return fmt.Sprintf("mongodb://%s:%s@%s:%s/%s", cfg.DB.User, cfg.DB.Passwd, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
 }
 
-//
+// Connect connects to MongoDB database server with given information and timeout (when connection cannot be established).
 func (cn *MongoDBConnection) Connect(dburl string, timeout int) error {
 
 	var sess *mgo.Session
@@ -81,7 +80,6 @@ func (cn *MongoDBConnection) Connect(dburl string, timeout int) error {
 }
 
 // ConnectDB connects to MongoDB database server with given information and timeout (when connection cannot be established).
-//func ConnectDB(host string, port int, user, pwd, name string, timeout time.Duration) (*MongoDBConnection, error) {
 func ConnectDB(cfg *Cfg) (*MongoDBConnection, error) {
 
 	url := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s", cfg.DB.User, cfg.DB.Passwd, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
@@ -95,38 +93,40 @@ func ConnectDB(cfg *Cfg) (*MongoDBConnection, error) {
 	cn.Session = sess
 	cn.Name = cfg.DB.Name
 
-    err = cn.EnsureIndexes()
+	err = cn.EnsureIndexes()
 	return cn, err
 }
 
-//
+// EnsureIndexes ensures that MongoDB indexes are created, when app is started.
 func (cn *MongoDBConnection) EnsureIndexes() error {
 
-    // wildcard text index is common to all collection
-    wcix := mgo.Index{ Key: []string{"$text:$**"}, Background: true, Sparse: true }
+	// wildcard text index is common to all collection
+	wcix := mgo.Index{Key: []string{"$text:$**"}, Background: true, Sparse: true}
 
-    var err error
-    coll := cn.Session.DB(cn.Name).C("cases")
-    cix1 := mgo.Index{ Key: []string{"priority"}, Background: true, Sparse: true }
-    cix2 := mgo.Index{ Key: []string{"auto"}, Background: true, Sparse: true }
-    cix3 := mgo.Index{ Key: []string{"reqid"}, Background: true, Sparse: true }
-    cix4 := mgo.Index{ Key: []string{"caseid"}, Unique: true, Background: true, Sparse: true }
-    err = coll.EnsureIndex(cix1)
-    err = coll.EnsureIndex(cix2)
-    err = coll.EnsureIndex(cix3)
-    err = coll.EnsureIndex(cix4)
-    err = coll.EnsureIndex(wcix)
+	var err error
+	// the cases collection indexes
+	coll := cn.Session.DB(cn.Name).C("cases")
+	cix1 := mgo.Index{Key: []string{"priority"}, Background: true, Sparse: true}
+	cix2 := mgo.Index{Key: []string{"auto"}, Background: true, Sparse: true}
+	cix3 := mgo.Index{Key: []string{"reqid"}, Background: true, Sparse: true}
+	cix4 := mgo.Index{Key: []string{"caseid"}, Unique: true, Background: true, Sparse: true}
+	err = coll.EnsureIndex(cix1)
+	err = coll.EnsureIndex(cix2)
+	err = coll.EnsureIndex(cix3)
+	err = coll.EnsureIndex(cix4)
+	err = coll.EnsureIndex(wcix)
 
-    coll = cn.Session.DB(cn.Name).C("requirements")
-    rix3 := mgo.Index{ Key: []string{"short"}, Unique:true, Background: true, Sparse: true }
-    rix1 := mgo.Index{ Key: []string{"priority"}, Background: true, Sparse: true }
-    rix2 := mgo.Index{ Key: []string{"status" }, Background: true, Sparse: true }
-    err = coll.EnsureIndex(rix1)
-    err = coll.EnsureIndex(rix2)
-    err = coll.EnsureIndex(rix3)
-    err = coll.EnsureIndex(wcix)
+	// the requirements collection indexes
+	coll = cn.Session.DB(cn.Name).C("requirements")
+	rix3 := mgo.Index{Key: []string{"short"}, Unique: true, Background: true, Sparse: true}
+	rix1 := mgo.Index{Key: []string{"priority"}, Background: true, Sparse: true}
+	rix2 := mgo.Index{Key: []string{"status"}, Background: true, Sparse: true}
+	err = coll.EnsureIndex(rix1)
+	err = coll.EnsureIndex(rix2)
+	err = coll.EnsureIndex(rix3)
+	err = coll.EnsureIndex(wcix)
 
-    return err
+	return err
 }
 
 // CloseDB safely closes the session to MongoDB database server and updates its internals.
@@ -138,7 +138,7 @@ func CloseDB(cn *MongoDBConnection) {
 	}
 }
 
-//
+// Close safely closes the session to MongoDB database server and updates its internals.
 func (cn *MongoDBConnection) Close() {
 	if cn.Session != nil {
 		cn.Session.Close()
@@ -151,14 +151,10 @@ func (cn *MongoDBConnection) Close() {
 type Timestamp string
 
 // NewTimestamp creates a properly formatted new instance of Timestamp.
-//func NewTimestamp() Timestamp { return Timestamp(time.Now().Format("2006-01-01 15:01:01")) }
 func NewTimestamp() Timestamp { return Timestamp(time.Now().Format(time.RFC822)) }
 
 // String returns the string representation of the timestamp.
 func (t Timestamp) String() string { return string(t) }
-
-// Update is a method that updates the timestamp to now.
-//func (t Timestamp) Update() { t = NewTimestamp() }
 
 // Case is a MongoDb wrapper for core Case type.
 type Case struct {
@@ -190,8 +186,7 @@ func (cn *MongoDBConnection) GetCases(srch string) ([]*Case, error) {
 	dblock.Lock()
 	defer dblock.Unlock()
 
-    //cases := make([]*Case, 0)
-    var cases []*Case
+	var cases []*Case
 	var err error
 	coll := cn.Session.DB(cn.Name).C("cases")
 	if srch == "" {
@@ -270,7 +265,7 @@ type Requirement struct {
 	core.Requirement `bson:",inline"`
 
 	// Created & Modified are the usual DB timestamps
-	Created, Modified  Timestamp
+	Created, Modified Timestamp
 }
 
 // NewRequirement creates a new instance of Requirement from minimum of mandatory information.
@@ -278,8 +273,8 @@ func NewRequirement(short, name string) *Requirement {
 
 	t := NewTimestamp()
 	r := core.NewRequirement()
-    r.Short = short
-    r.Name = name
+	r.Short = short
+	r.Name = name
 	return &Requirement{
 		ID:          bson.NewObjectId(),
 		Requirement: *r,
@@ -295,7 +290,6 @@ func (cn *MongoDBConnection) GetRequirements(srch string) ([]*Requirement, error
 	defer dblock.Unlock()
 
 	var reqs []*Requirement
-    //reqs := make([]*Requirement, 0)
 	var err error
 	coll := cn.Session.DB(cn.Name).C("requirements")
 	if srch == "" {

@@ -64,7 +64,7 @@ func main() {
 	signal.Notify(c, os.Interrupt, os.Kill)
 	go func() {
 		<-c
-	    fmt.Println("Stop.")
+		fmt.Println("Stop.")
 		app.Cleanup()
 		os.Exit(0) // CTRL-C is clean exit for this app...
 	}()

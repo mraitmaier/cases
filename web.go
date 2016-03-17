@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	// "github.com/gorilla/sessions"
 )
 
 const (
@@ -28,13 +27,13 @@ type PageMessage struct {
 	Code int `json:"code"`
 	// Type denotes the message type: warning, danger, success, info
 	Type string `json:"type"`
-	// Text is the actual text of the message
+	// Message is the actual text of the message
 	Message string `json:"message"`
 	// Status is HTTP Error Code: 200, 404 etc.
 	Status int `json:"status"`
 }
 
-// A handy string represenation of the WebMessage instance.
+// Sring is a handy string represenation of the WebMessage instance.
 func (m *PageMessage) String() string {
 	return fmt.Sprintf("%d (%s): %s", m.Code, m.Type, m.Message)
 }
@@ -45,6 +44,7 @@ func (m *PageMessage) MarshalJSON() ([]byte, error) { return json.Marshal(m) }
 // UnmarshalJSON unmarshals the JSON-encoded text into error message.
 func (m *PageMessage) UnmarshalJSON(j []byte) error { return json.Unmarshal(j, m) }
 
+// The webStart function actually starts the web application.
 func webStart(app *appinfo, wwwpath string) (err error) {
 
 	// register handler functions
@@ -71,8 +71,8 @@ func webStart(app *appinfo, wwwpath string) (err error) {
 
 	// finally, start web server, we're using HTTP
 	http.ListenAndServe(":8888", context.ClearHandler(http.DefaultServeMux))
-    //http.ListenAndServeTLS(":8888", "./web/mycert1.cer", "./web/mycert1.key",
-    //http.ListenAndServeTLS(":8888", "./web/server.pem", "./web/server.key", context.ClearHandler(http.DefaultServeMux))
+	//http.ListenAndServeTLS(":8888", "./web/mycert1.cer", "./web/mycert1.key",
+	//http.ListenAndServeTLS(":8888", "./web/server.pem", "./web/server.key", context.ClearHandler(http.DefaultServeMux))
 	return nil
 }
 
@@ -82,8 +82,6 @@ func registerHandlers(app *appinfo) {
 	r.Handle("/", indexHandler(app))
 	r.Handle("/index", indexHandler(app))
 	r.Handle("/license", licHandler(app))
-	//r.Handle("/user", userHandler(app))
-	//r.Handle("/user/{id}", userHandler(app))
 	r.Handle("/case", caseHandler(app))
 	r.Handle("/case/{id}/{cmd}", caseHandler(app))
 	r.Handle("/requirement", requirementHandler(app))
@@ -154,22 +152,6 @@ func caseHandler(app *appinfo) http.Handler {
 	})
 }
 
-/*
-// This HTTP DELETE handler for cases.
-func caseHTTPDeleteHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
-
-	id := mux.Vars(r)["id"]
-	// If ID is empty, we currently do nothing
-	if id == "" {
-		return nil // TODO?
-	}
-	if err := app.dbconn.DeleteCase(id); err != nil {
-		return err
-	}
-	return nil
-}
-*/
-
 // This is HTTP POST handler for test cases.
 func caseHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
@@ -204,30 +186,6 @@ func caseHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) e
 	}
 	return err
 }
-
-/*
-// This HTTP PUT handler for cases.
-func caseHTTPPutHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
-
-	id := mux.Vars(r)["id"]
-	cmd := mux.Vars(r)["cmd"]
-
-	// If ID is empty, we currently do nothing
-	if id == "" {
-		return nil // TODO?
-	}
-	//fmt.Printf("DEBUG PUT req id='%s'\n", id) // DEBUG
-	//var err error
-	if c := parseCaseFormValues(r); c != nil {
-		c.ID = MongoStringToID(id)
-		if err := app.dbconn.ModifyCase(c); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-*/
 
 // Helper function that parses the '/case' POST request values and creates a new instance of Case.
 func parseCaseFormValues(r *http.Request) *Case {
@@ -276,46 +234,24 @@ func casesGetReqIDs(app *appinfo) []string {
 // This is HTTP GET handler for test cases.
 func caseHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
-	id := mux.Vars(r)["id"]
-	// If ID is empty, we render the default all-cases page
-	if id == "" {
-		c, err := app.dbconn.GetCases(qry)
-		if err != nil {
-			http.Redirect(w, r, "/err404", http.StatusFound)
-			return fmt.Errorf("Problem getting cases from DB: '%s'", err.Error())
-		}
-
-		// get requirement IDs as a slice of strings
-		req := casesGetReqIDs(app)
-
-		// create ad-hoc struct to be sent to page template
-		var web = struct {
-			Cases []*Case
-			Num   int
-            Ptype string
-			Reqs  []string
-			User  string
-		}{c, len(c), "cases", req, UserName}
-
-		return renderPage("cases", web, app, w, r)
-	}
-    return nil
-
-    /*
-	// otherwise case with given ID is obtained from DB and displayed
-	c, err := app.dbconn.GetCase(id)
+	c, err := app.dbconn.GetCases(qry)
 	if err != nil {
-		return fmt.Errorf("get a case from DB (ID='%s'): '%s'", id, err.Error())
+		http.Redirect(w, r, "/err404", http.StatusFound)
+		return fmt.Errorf("Problem getting cases from DB: '%s'", err.Error())
 	}
+
+	// get requirement IDs as a slice of strings
+	req := casesGetReqIDs(app)
 
 	// create ad-hoc struct to be sent to page template
 	var web = struct {
-		Case *Case
-		User strin
-	}{c, UserName}
+		Cases []*Case
+		Num   int
+		Ptype string
+		Reqs  []string
+	}{c, len(c), "cases", req}
 
-	return renderPage("case", web, app, w, r)
-    */
+	return renderPage("cases", web, app, w, r)
 }
 
 // This is the default root and index.html handler function.
@@ -453,62 +389,41 @@ func parseReqFormValues(r *http.Request) *Requirement {
 // This is HTTP GET handler for requirements.
 func reqHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
-	id := mux.Vars(r)["id"]
-
-	// If ID is empty, we render the default all-requirements page
-	if id == "" {
-
-		reqs, err := app.dbconn.GetRequirements(qry)
-		if err != nil {
-            fmt.Printf("DEBUG req HTTP GET handler err=%q\n", err.Error()) // DEBUG
-			http.Redirect(w, r, "/err404", http.StatusFound)
-			return fmt.Errorf("Problem getting requirements from DB: '%s'", err.Error())
-		}
-		// create ad-hoc struct to be sent to page template
-		var web = struct {
-			Reqs []*Requirement
-			Num  int
-            Ptype string
-		}{reqs, len(reqs), "reqs"}
-
-		return renderPage("requirements", web, app, w, r)
-	}
-    return nil
-    /*
-	// otherwise case with given ID is obtained from DB and displayed
-	req, err := app.dbconn.GetRequirement(id)
+	reqs, err := app.dbconn.GetRequirements(qry)
 	if err != nil {
-		return fmt.Errorf("get a requirement from DB (ID='%s'): '%s'", id, err.Error())
+		http.Redirect(w, r, "/err404", http.StatusFound)
+		return fmt.Errorf("Problem getting requirements from DB: '%s'", err.Error())
 	}
 	// create ad-hoc struct to be sent to page template
 	var web = struct {
-		req  *Requirement
-		User string
-	}{req, UserName}
+		Reqs  []*Requirement
+		Num   int
+		Ptype string
+	}{reqs, len(reqs), "reqs"}
 
 	return renderPage("requirements", web, app, w, r)
-    */
 }
+
 // This is handler that handler the "/search" URL. It accepts only POST requests.
 func searchHandler(app *appinfo) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			var err error
-			switch r.Method {
+		var err error
+		switch r.Method {
 
-			case "POST":
-				if err = searchHTTPPostHandler(w, r, app); err != nil {
-					//app.Log.Error(fmt.Sprintf("Search HTTP POST %s", err.Error()))
-				}
-
-			default:
-				// otherwise just display main 'index' page
-				if err := renderPage("index", nil, app, w, r); err != nil {
-					//app.Log.Error(fmt.Sprintf("Index HTTP GET %s", err.Error()))
-					return
-				}
+		case "POST":
+			if err = searchHTTPPostHandler(w, r, app); err != nil {
+				//app.Log.Error(fmt.Sprintf("Search HTTP POST %s", err.Error()))
 			}
+
+		default:
+			// otherwise just display main 'index' page
+			if err := renderPage("index", nil, app, w, r); err != nil {
+				//app.Log.Error(fmt.Sprintf("Index HTTP GET %s", err.Error()))
+				return
+			}
+		}
 	})
 }
 
@@ -520,10 +435,10 @@ func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo)
 
 	// if type is empty, we cannot do anything with it, just redirect to index page
 	if ptype == "" {
-	    return renderPage("index", nil, app, w, r)
+		return renderPage("index", nil, app, w, r)
 	}
 
-    var err error
+	var err error
 	switch strings.ToLower(ptype) {
 
 	case "cases":
@@ -534,7 +449,7 @@ func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo)
 
 	default:
 		// just render the /index page
-	    renderPage("index", nil, app, w, r)
-    }
+		renderPage("index", nil, app, w, r)
+	}
 	return err
 }
