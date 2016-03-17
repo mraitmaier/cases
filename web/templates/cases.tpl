@@ -39,23 +39,18 @@
                 <table id="cases" class="table table-stripped table-hover small">
 
                 <thead>
-                    <tr>
-                        <th class="col-sm-1">#</th>
-                        <th class="col-sm-1">Case ID</th>
-                        <th class="col-sm-4">Name</th>
-                        <th class="col-sm-1">Priority</th>
-                        <th class="col-sm-1">Automated</th>
-                        <th class="col-sm-3">Requirement ID</th>
-                        <th class="col-sm-1 text-right">Actions</th>
-                    </tr>
+            {{template "case-table-header"}}
                 </thead>
 
                 <tfoot>
+            {{template "case-table-header"}}
+                <!--
                     <tr class="bg-primary">
                         <td colspan="7" class="text-right">
                             <strong> {{.Num}} test {{if eq .Num 1}} case {{else}} cases {{end}} found.</strong>
                         </td>
                     </tr>
+                    -->
                 </tfoot>
 
                 <tbody>
@@ -224,6 +219,18 @@
     </script>
   </body>
 </html>
+{{end}}
+
+{{define "case-table-header"}}
+                    <tr>
+                        <th class="col-sm-1">#</th>
+                        <th class="col-sm-1">Case ID</th>
+                        <th class="col-sm-4">Name</th>
+                        <th class="col-sm-1">Priority</th>
+                        <th class="col-sm-1">Automated</th>
+                        <th class="col-sm-3">Requirement ID</th>
+                        <th class="col-sm-1 text-right">Actions</th>
+                    </tr>
 {{end}}
 
 {{define "add_case_modal"}}
