@@ -240,6 +240,10 @@
              <div class="form-group form-group-sm">
                 <label for="reqstatus" class="col-sm-2 control-label">Status</label>
                 <div class="col-sm-10">
+                <input type="hidden"  id="reqstatus" name="reqstatus" value="New">
+                    <label  class="form-control">New</label>
+
+                <!--
                 <select class="form-control" id="reqstatus" name="reqstatus" required>
                     <option selected>New</option>
                     <option>Acknowledged</option>
@@ -248,6 +252,7 @@
                     <option>Rejected</option>
                     <option>Obsolete</option>
                 </select>
+                -->
                 </div>
             </div>
             <div class="form-group form-group-sm">
