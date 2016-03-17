@@ -73,6 +73,7 @@ func webStart(app *appinfo, wwwpath string) (err error) {
 	http.ListenAndServe(":8888", context.ClearHandler(http.DefaultServeMux))
 	//http.ListenAndServeTLS(":8888", "./web/mycert1.cer", "./web/mycert1.key",
 	//http.ListenAndServeTLS(":8888", "./web/server.pem", "./web/server.key", context.ClearHandler(http.DefaultServeMux))
+	Info(app.log, "WebServer up & running")
 	return nil
 }
 
@@ -104,8 +105,10 @@ func renderPage(name string, web interface{}, aa *appinfo, w http.ResponseWriter
 
 	var err error
 	if err = aa.templates.ExecuteTemplate(w, name, web); err != nil {
+		Errorf(aa.log, "Cannot display %q page, redirecting to 404", name)
 		http.Redirect(w, r, "/err404", http.StatusFound)
 	}
+	Infof(aa.log, "Displaying %q page, everything OK", name)
 	return err
 }
 
@@ -120,20 +123,20 @@ func caseHandler(app *appinfo) http.Handler {
 
 		case "GET":
 			if err = caseHTTPGetHandler("", w, r, app); err != nil {
-				Errorf(app.log, "Cases HTTP GET %s", err.Error())
+				Errorf(app.log, "Cases HTTP GET %q", err.Error())
 			}
 
 		case "POST":
 
 			if err = caseHTTPPostHandler(w, r, app); err != nil {
-				Errorf(app.log, "Cases HTTP POST %s", err.Error())
+				Errorf(app.log, "Cases HTTP POST %q", err.Error())
 			}
 			// unconditionally reroute to main test cases page
 			http.Redirect(w, r, "/case", http.StatusSeeOther)
 
 		case "DELETE":
 			Infof(app.log, "Case HTTP DELETE request received. Redirecting to main 'cases' page.")
-			// unconditionally reroute to main test cases page
+			// unconditionally reroute to main test cases pag, namee
 			// Use HTTP 303 (see other) to force GET to redirect as DELETE request is normally followed by another DELETE
 			http.Redirect(w, r, "/case", http.StatusSeeOther)
 
@@ -145,7 +148,7 @@ func caseHandler(app *appinfo) http.Handler {
 
 		default:
 			if err := renderPage("index", nil, app, w, r); err != nil {
-				Errorf(app.log, "Index HTTP GET %s", err.Error())
+				Errorf(app.log, "Index HTTP GET %q", err.Error())
 				return
 			}
 		}
@@ -170,7 +173,9 @@ func caseHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) e
 		if id == "" {
 			return fmt.Errorf("Delete test case: test case ID is empty")
 		}
-		err = app.dbconn.DeleteCase(id)
+		if err = app.dbconn.DeleteCase(id); err == nil {
+			Infof(app.log, "Test case ID=%q successfully deleted", id)
+		}
 
 	case "put":
 		if id == "" {
@@ -178,7 +183,9 @@ func caseHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) e
 		}
 		if c := parseCaseFormValues(r); c != nil {
 			c.ID = MongoStringToID(id)
-			err = app.dbconn.ModifyCase(c)
+			if err = app.dbconn.ModifyCase(c); err == nil {
+				Infof(app.log, "Test case '%s[%s]' successfully updated", c.CaseID, id)
+			}
 		}
 
 	default:
@@ -298,14 +305,12 @@ func requirementHandler(app *appinfo) http.Handler {
 
 		case "GET":
 			if err = reqHTTPGetHandler("", w, r, app); err != nil {
-				//fmt.Printf("Error %q\n", err.Error())
-				Errorf(app.log, "Requirement HTTP GET %s", err.Error())
+				Errorf(app.log, "Requirement HTTP GET %q", err.Error())
 			}
 
 		case "POST":
 			if err = reqHTTPPostHandler(w, r, app); err != nil {
-				//fmt.Printf("Error POST req %q\n", err.Error())
-				Errorf(app.log, "Requirement HTTP POST %s", err.Error())
+				Errorf(app.log, "Requirement HTTP POST %q", err.Error())
 			}
 			// unconditionally reroute to main requirements page
 			http.Redirect(w, r, "/requirement", http.StatusFound)
@@ -324,7 +329,7 @@ func requirementHandler(app *appinfo) http.Handler {
 
 		default:
 			if err := renderPage("index", nil, app, w, r); err != nil {
-				Errorf(app.log, "Index HTTP GET %s", err.Error())
+				Errorf(app.log, "Index HTTP GET %q", err.Error())
 				return
 			}
 		}
@@ -349,7 +354,9 @@ func reqHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) er
 		if id == "" {
 			return fmt.Errorf("Delete requirement: ID is empty")
 		}
-		return app.dbconn.DeleteRequirement(id)
+		if err = app.dbconn.DeleteRequirement(id); err == nil {
+			Infof(app.log, "Requirement %q successfully deleted", id)
+		}
 
 	case "put":
 		if id == "" {
@@ -357,7 +364,9 @@ func reqHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) er
 		}
 		if req := parseReqFormValues(r); req != nil {
 			req.ID = MongoStringToID(id)
-			err = app.dbconn.ModifyRequirement(req)
+			if err = app.dbconn.ModifyRequirement(req); err == nil {
+				Infof(app.log, "Requirement '%s [%s]' successfully updated", req.Short, id)
+			}
 		}
 
 	default:
@@ -414,14 +423,13 @@ func searchHandler(app *appinfo) http.Handler {
 
 		case "POST":
 			if err = searchHTTPPostHandler(w, r, app); err != nil {
-				//app.Log.Error(fmt.Sprintf("Search HTTP POST %s", err.Error()))
+				Errorf(app.log, "Search HTTP POST %q", err.Error())
 			}
 
 		default:
 			// otherwise just display main 'index' page
 			if err := renderPage("index", nil, app, w, r); err != nil {
-				//app.Log.Error(fmt.Sprintf("Index HTTP GET %s", err.Error()))
-				return
+				Errorf(app.log, "Index HTTP GET %s", err.Error())
 			}
 		}
 	})
