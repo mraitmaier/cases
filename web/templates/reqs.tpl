@@ -112,15 +112,22 @@
     <!-- include jQuery 2.x & plugins -->
     <script src="static/js/jquery.min.js"></script>
     <script src="static/js/jquery.dataTables.min.js"></script>
+    <script src="static/js/jquery.validate.min.js"></script>
+    <!-- <script src="static/js/additional-methods.min.js"></script> additional for validate -->
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/dataTables.bootstrap.min.js"></script>
     <!-- Include custom application JS code -->
     <script src="static/js/cases.js"></script>
     <script>
 
-    // initialize jQuery dataTables
+    // initialize jQuery dataTables plugin
+    // and validation plugin also...
     $(document).ready( function () {
+
         $('#requirements').DataTable();
+
+        $('#add_req_form').validate();
+        $('#modify_req_form').validate();
     } ); 
 
     $('#viewReqModal').on('show.bs.modal', function (event) {
@@ -183,6 +190,22 @@
         });
     });
 
+    // Add requirement form on-submit validation 
+    $('#addbtn').click(function() {
+        if ( $('#add_req_form').valid() ) {
+            postForm('add_req_form', '/requirement'); 
+            $('#addReqModal').modal('hide');
+        }
+    });
+
+    // Modify requirement form on-submit validation 
+    $('#modifybtn').click(function() {
+        if ( $('#modify_req_form').valid() ) {
+            modifyReq('modify_req_form', $('#hexid').val()); 
+            $('#modifyReqModal').modal('hide');
+        }
+    });
+
     </script>
   </body>
 </html>
@@ -197,27 +220,27 @@
     <div class="container-fluid">
         <div class="row">
             <h4 class="modal-title col-sm-8" id="addReqModalLabel">Add a New Requirement</h4>
-            <button type="button" class="btn btn-primary btn-sm col-sm-2" 
-                    onclick="postForm('add_req_form', '/requirement'); $('#addReqModal').modal('hide');">Add</button>
+            <button type="button" class="btn btn-primary btn-sm col-sm-2" id="addbtn">Add</button>
+                    <!--onclick="postForm('add_req_form', '/requirement'); $('#addReqModal').modal('hide');">Add</button>-->
             <button type="button" class="btn btn-default btn-sm col-sm-2" data-dismiss="modal">Cancel</button>
         </div> <!-- row -->
     </div> <!-- container-fluid -->
     </div> <!-- modal-header -->
 
     <div class="modal-body">
-      <form id="add_req_form" class="form-horizontal" method="POST" action="">
+      <form id="add_req_form" class="form-horizontal" method="post">
           <div class="form-group form-group-sm">
               <label for="short" class="col-sm-2 control-label">Short Name</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="short" name="short" placeholder="Short Name" 
-                                   onblur="return validateInput($(this).val(), 'Requirement Short Name');" required>
+                    <input type="text" class="form-control" id="short" name="short" placeholder="Short Name" 
+                                       minlength="2" required>
               </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="name" class="col-sm-2 control-label">Full Name</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="name" name="name" placeholder="Full Requirement Name" 
-                                   onblur="return validateInput($(this).val(), 'Requirement Name');" required>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Full Requirement Name" 
+                                       minlength="2" required>
                 </div>
             </div>
             <div class="form-group form-group-sm">
@@ -233,7 +256,8 @@
              <div class="form-group form-group-sm">
                 <label for="reqstatus" class="col-sm-2 control-label">Status</label>
                 <div class="col-sm-10">
-                <input type="hidden"  id="reqstatus" name="reqstatus" value="New">
+                    <!-- this is forced; only shown here as label for user to know -->
+                    <input type="hidden"  id="reqstatus" name="reqstatus" value="New">
                     <label  class="form-control">New</label>
                 </div>
             </div>
@@ -311,7 +335,6 @@
 </div>
 {{end}}
 
-
 {{define "modify_req_modal"}}
 <div class="modal fade" id="modifyReqModal" tabindex="-1" role="dialog" aria-labelledby="modifyReqModalLabel">
 <div class="modal-dialog">
@@ -321,8 +344,8 @@
     <div class="container-fluid">
         <div class="row">
             <h4 class="modal-title col-sm-8" id="modifyReqModalLabel">Error Requirement Title</h4>
-            <button type="button" class="btn btn-primary btn-sm col-sm-2" 
-                    onclick="modifyReq('modify_req_form', $('#hexid').val()); $('#modifyReqModal').modal('hide');">
+            <button type="button" class="btn btn-primary btn-sm col-sm-2" id="modifybtn"> 
+                  <!--  onclick="modifyReq('modify_req_form', $('#hexid').val()); $('#modifyReqModal').modal('hide');">-->
                     Modify
             </button>
             <button type="button" class="btn btn-default btn-sm col-sm-2" data-dismiss="modal">Cancel</button>
@@ -336,21 +359,19 @@
           <div class="form-group form-group-sm">
               <label for="short" class="col-sm-2 control-label">Short Name</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="short" name="short" 
-                                   onblur="return validateInput($(this).val(), 'Requirement Short Name');" required>
+                <input type="text" class="form-control" id="short" name="short" minlength="2" required>
               </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="name" class="col-sm-2 control-label">Full Name</label>
                 <div class="col-sm-10">
-                  <input type="text" class="form-control" id="name" name="name" 
-                                   onblur="return validateInput($(this).val(), 'Requirement Name');" required>
+                  <input type="text" class="form-control" id="name" name="name" minlength="2" required>
                 </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="priority" class="col-sm-2 control-label">Priority</label>
                 <div class="col-sm-10">
-                <select class="form-control" id="priority" name="priority">
+                <select class="form-control" id="priority" name="priority" required>
                     <option>Low</option>
                     <option>Normal</option>
                     <option>High</option>
@@ -360,7 +381,7 @@
              <div class="form-group form-group-sm">
                 <label for="reqstatus" class="col-sm-2 control-label">Status</label>
                 <div class="col-sm-10">
-                <select class="form-control" id="reqstatus" name="reqstatus">
+                <select class="form-control" id="reqstatus" name="reqstatus" required>
                     <option>New</option>
                     <option>Acknowledged</option>
                     <option>Pending</option>

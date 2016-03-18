@@ -44,13 +44,6 @@
 
                 <tfoot>
             {{template "case-table-header"}}
-                <!--
-                    <tr class="bg-primary">
-                        <td colspan="7" class="text-right">
-                            <strong> {{.Num}} test {{if eq .Num 1}} case {{else}} cases {{end}} found.</strong>
-                        </td>
-                    </tr>
-                    -->
                 </tfoot>
 
                 <tbody>
@@ -134,6 +127,8 @@
     <!-- jQuery 2.0 (necessary for Bootstrap's JavaScript plugins) & other plugins -->
     <script src="static/js/jquery.min.js"></script>
     <script src="static/js/jquery.dataTables.min.js"></script>
+    <script src="static/js/jquery.validate.min.js"></script>
+    <!-- <script src="static/js/additional-methods.min.js"></script> additional for validate -->
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/dataTables.bootstrap.min.js"></script>
     <!-- Include custom application JS code -->
@@ -141,8 +136,47 @@
     <script>
     
     // initialize dataTables jQuery plugin for better tables...
+    // and validation plugin also...
     $(document).ready( function() {
+
         $('#cases').DataTable();
+
+        $('#add_case_form').validate({
+            rules: {
+                caseid: {
+                    required: true,
+                    minlength: 2
+                },
+                casename: {
+                    required: true,
+                    minlength: 2
+                },
+                priority: {
+                    required: true
+                },  
+                automated: {
+                    required: true
+                }  
+            },
+        });
+        $('#modify_case_form').validate({
+            rules: {
+                caseid: {
+                    required: true,
+                    minlength: 2
+                },
+                casename: {
+                    required: true,
+                    minlength: 2
+                },
+                priority: {
+                    required: true
+                },  
+                automated: {
+                    required: true
+                }  
+            },
+        });
     });
 
     $('#viewCaseModal').on('show.bs.modal', function (event) {
@@ -214,7 +248,22 @@
              postForm('remove_case_form', url);
              $('#removeCaseModal').modal('hide');
         });
-    })
+    });
+
+    // Add Case form on-submit validation 
+    $('#addbtn').click(function() {
+        if ($('#add_case_form').valid()) {
+            addCase();
+        }
+    });
+
+    // Modify Case form on-submit validation 
+    $('#modifybtn').click(function() {
+        if ($('#modify_case_form').valid()) {
+            modifyCase('modify_case_form', $('#hexid').val()); 
+            $('#modifyCaseModal').modal('hide');
+        }
+    });
 
     </script>
   </body>
@@ -242,28 +291,27 @@
     <div class="container-fluid">
         <div class="row">
             <h4 class="modal-title col-sm-8" id="addCaseModalLabel">Add a New Test Case</h4>
-            <button type="button" class="btn btn-primary btn-sm col-sm-2" onclick="return addCase();">Add</button>
+            <!--
+            <button type="button" id="addbtn" class="btn btn-primary btn-sm col-sm-2" onclick="return addCase();">Add</button>
+            -->
+            <button type="button" id="addbtn" class="btn btn-primary btn-sm col-sm-2">Add</button>
             <button type="button" class="btn btn-default btn-sm col-sm-2" data-dismiss="modal">Cancel</button>
         </div> <!-- row -->
     </div> <!-- container-fluid -->
     </div> <!-- modal-header -->
 
     <div class="modal-body">
-      <!--<form id="add_case_form" class="form-horizontal" method="POST" onsubmit="return validateCaseForm();">-->
-      <form id="add_case_form" class="form-horizontal" method="POST">
+      <form id="add_case_form" class="form-horizontal" method="post">
           <div class="form-group form-group-sm">
               <label for="caseid" class="col-sm-3 control-label">Case ID</label>
               <div class="col-sm-9">
-                <input type="text" class="form-control" id="caseid" name="caseid" placeholder="Case ID" required>
-                                 <!--  onblur="return validateInput($(this).val(), 'Test Case ID');" required> -->
+                <input type="text" class="form-control" id="caseid" name="caseid" placeholder="Case ID">
               </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="casename" class="col-sm-3 control-label">Full Name</label>
                 <div class="col-sm-9">
-                      <input type="text" class="form-control" id="casename" name="casename" 
-                                         placeholder="Full Case Name" required>
-                                <!--  onblur="return validateInput($(this).val(), 'Test Case Name');" required> -->
+                      <input type="text" class="form-control" id="casename" name="casename" placeholder="Full Case Name">
                 </div>
             </div>
             <div class="form-group form-group-sm">
@@ -325,17 +373,6 @@
       </form>
     </div>
 
-<!--
-    <div class="modal-footer">   
-    <div class="container-fluid">
-        <div class="row">
-            <div class="modal-title col-sm-offset-8">&nbsp;</div>
-            <button type="button" class="btn btn-primary col-sm-2" onclick="return addCase();">Add</button>
-            <button type="button" class="btn btn-default col-sm-2" data-dismiss="modal">Cancel</button>
-        </div> 
-    </div> 
-    </div> 
--->
 </div>
 </div>
 </div>
@@ -416,15 +453,6 @@
             </div>
       </form>
     </div>
-  <!--  
-    <div class="modal-footer">   
-    <div class="container-fluid">
-        <div class="row">
-            <button type="button" class="btn btn-default col-md-offset-10 col-md-2" data-dismiss="modal">Cancel</button>
-        </div> 
-    </div> 
-    </div> 
-  --> 
 </div>
 </div>
 </div>
@@ -440,8 +468,10 @@
     <div class="container-fluid">
         <div class="row">
             <h4 class="modal-title col-sm-8" id="modifyCaseModalLabel">Empty Test Case Title</h4>
-            <button type="button" class="btn btn-primary btn-sm col-sm-2" 
-                    onclick="modifyCase('modify_case_form', $('#hexid').val()); $('#modifyCaseModal').modal('hide');">
+            <button type="button" class="btn btn-primary btn-sm col-sm-2" id="modifybtn">
+                    <!--
+                    onclick="modifyCase('modify_case_form', $('#hexid').val()); $('#modifyCaseModal').modal('hide');"
+                    -->
                     Modify
             </button>
             <button type="button" class="btn btn-default btn-sm col-sm-2" data-dismiss="modal">Cancel</button>
@@ -450,20 +480,18 @@
     </div> <!-- modal-header -->
 
     <div class="modal-body">
-      <form id="modify_case_form" class="form-horizontal" onsubmit="return validateCaseForm();">
+      <form id="modify_case_form" class="form-horizontal">
             <input type="hidden" id="hexid" name="hexid">
           <div class="form-group form-group-sm">
               <label for="caseid" class="col-sm-3 control-label">Case ID</label>
               <div class="col-sm-9">
-                <input type="text" class="form-control" id="caseid" name="caseid"
-                                   onblur="return validateCaseID($(this).val());" required>
+                <input type="text" class="form-control" id="caseid" name="caseid" minlength="2" required>
               </div>
             </div>
             <div class="form-group form-group-sm">
                 <label for="casename" class="col-sm-3 control-label">Full Name</label>
                 <div class="col-sm-9">
-                  <input type="text" class="form-control" id="casename" name="casename"
-                                   onblur="return validateCaseName($(this).val());"required>
+                  <input type="text" class="form-control" id="casename" name="casename" minlength="2" required>
                 </div>
             </div>
             <div class="form-group form-group-sm">
