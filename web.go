@@ -17,7 +17,7 @@ const (
 	DefWebRoot string = "./web/"
 
 	// UserName (Just for testing purposes...) FIXME
-	UserName string = "Administrator"
+//	UserName string = "Administrator"
 )
 
 // PageMessage is the structure for displaying messages on web page
@@ -265,7 +265,8 @@ func caseHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app 
 func indexHandler(app *appinfo) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if err := renderPage("index", UserName, app, w, r); err != nil {
+		//if err := renderPage("index", UserName, app, w, r); err != nil {
+		if err := renderPage("index", nil, app, w, r); err != nil {
 			Error(app.log, err.Error())
 			return
 		}
@@ -276,7 +277,8 @@ func indexHandler(app *appinfo) http.Handler {
 func licHandler(app *appinfo) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if err := renderPage("license", UserName, app, w, r); err != nil {
+		//if err := renderPage("license", UserName, app, w, r); err != nil {
+		if err := renderPage("license", nil, app, w, r); err != nil {
 			Error(app.log, err.Error())
 			return
 		}
