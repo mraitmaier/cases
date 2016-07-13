@@ -463,3 +463,119 @@ func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo)
 	}
 	return err
 }
+
+// This is handler that handler the "/project" URL.
+func projectHandler(app *appinfo) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		var err error
+
+		switch r.Method {
+
+		case "GET":
+			if err = projHTTPGetHandler("", w, r, app); err != nil {
+				Errorf(app.log, "Project HTTP GET %q", err.Error())
+			}
+
+		case "POST":
+			if err = projHTTPPostHandler(w, r, app); err != nil {
+				Errorf(app.log, "Project HTTP POST %q", err.Error())
+			}
+			// unconditionally reroute to main project page
+			http.Redirect(w, r, "/project", http.StatusFound)
+
+		case "DELETE":
+			Infof(app.log, "Project HTTP DELETE request received. Redirecting to main 'project' page.")
+			// unconditionally reroute to main project page
+			// Use HTTP 303 (see other) to force GET to redirect as DELETE request is normally followed by another DELETE
+			http.Redirect(w, r, "/project", http.StatusSeeOther)
+
+		case "PUT":
+			Infof(app.log, "Project HTTP PUT request received. Redirecting to main 'project' page.")
+			// unconditionally reroute to main project page
+			// Use HTTP 303 (see other) to force GET to redirect as PUT request is normally followed by another PUT
+			http.Redirect(w, r, "/project", http.StatusSeeOther)
+
+		default:
+			if err := renderPage("index", nil, app, w, r); err != nil {
+				Errorf(app.log, "Index HTTP GET %q", err.Error())
+				return
+			}
+		}
+	})
+}
+
+// This is HTTP POST handler for projects.
+func projHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+
+	id := mux.Vars(r)["id"]
+	cmd := mux.Vars(r)["cmd"]
+
+	var err error
+	switch strings.ToLower(cmd) {
+
+	case "":
+		if p := parseProjFormValues(r); p != nil {
+			err = app.dbconn.InsertProject(p)
+		}
+
+	case "delete":
+		if id == "" {
+			return fmt.Errorf("Delete project: ID is empty")
+		}
+		if err = app.dbconn.DeleteProject(id); err == nil {
+			Infof(app.log, "Project %q successfully deleted", id)
+		}
+
+	case "put":
+		if id == "" {
+			return fmt.Errorf("Modify project: ID is empty")
+		}
+		if p := parseProjFormValues(r); p != nil {
+			p.ID = MongoStringToID(id)
+			if err = app.dbconn.ModifyProject(p); err == nil {
+				Infof(app.log, "Project %q successfully updated", p.String(), id)
+			}
+		}
+
+	default:
+		err = fmt.Errorf("Illegal POST request for requirement")
+	}
+	return err
+}
+
+// Helper function that parses the '/project' POST request values and creates a new instance of Project 
+func parseProjFormValues(r *http.Request) *Project {
+
+	short := strings.TrimSpace(r.FormValue("short"))
+	name := strings.TrimSpace(r.FormValue("name"))
+	desc := strings.TrimSpace(r.FormValue("description"))
+	created := strings.TrimSpace(r.FormValue("created"))
+	modified := strings.TrimSpace(r.FormValue("modified"))
+
+	p := NewProject(short, name)
+	p.Description = desc
+	p.Created = Timestamp(created)
+	p.Modified = Timestamp(modified)
+	return p
+}
+
+// This is HTTP GET handler for projects 
+func projHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
+
+	p, err := app.dbconn.GetProjects(qry)
+	if err != nil {
+		http.Redirect(w, r, "/err404", http.StatusFound)
+		return fmt.Errorf("Problem getting project from DB: %s", err.Error())
+	}
+	// create ad-hoc struct to be sent to page template
+	var web = struct {
+		Projects  []*Project
+		Num   int
+		Ptype string
+	}{p, len(p), "projects"}
+
+	return renderPage("projects", web, app, w, r)
+}
+
