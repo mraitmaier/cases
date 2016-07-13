@@ -87,6 +87,8 @@ func registerHandlers(app *appinfo) {
 	r.Handle("/case/{id}/{cmd}", caseHandler(app))
 	r.Handle("/requirement", requirementHandler(app))
 	r.Handle("/requirement/{id}/{cmd}", requirementHandler(app))
+	r.Handle("/project", projectHandler(app))
+	r.Handle("/project/{id}/{cmd}", projectHandler(app))
 
 	r.Handle("/search", searchHandler(app))
 	r.Handle("/err404", err404Handler(app))

@@ -82,6 +82,9 @@ type Requirement struct {
 
 	// Priority of the requirement: low, normal, high
 	Priority
+
+    // Project is
+    Project
 }
 
 // CreateRequirement returns a new instance of Requirement type from the known data.
@@ -92,6 +95,7 @@ func CreateRequirement(short, name, desc string, prio Priority, status ReqStatus
 		Description: desc,
 		Priority:    prio,
 		Status:      status,
+        Project: *NewProject("", ""),
 	}
 }
 
@@ -103,5 +107,6 @@ func NewRequirement() *Requirement {
 		Description: "",
 		Priority:    NormalPriority,
 		Status:      StatusUnknown,
+        Project: *NewProject("", ""),
 	}
 }
