@@ -54,6 +54,7 @@
                         <td>{{$id}}</td>
                         <td>{{$elem.Short}}</td>
                         <td>{{$elem.Name}}</td>
+                        <td>{{$elem.Project}}</td>
                         <td>{{$elem.Priority}}</td>
                         <td>{{$elem.Status}}</td>
                         <td class="text-right">
@@ -66,6 +67,7 @@
                                 data-reqname="{{$elem.Name}}"
                                 data-prio="{{$elem.Priority}}"
                                 data-reqstatus="{{$elem.Status}}"
+                                data-project="{{$elem.Project}}"
                                 data-desc="{{$elem.Description}}">
                                 <span class="glyphicon glyphicon-eye-open"></span>
                             </a>
@@ -80,6 +82,7 @@
                                 data-reqname="{{$elem.Name}}"
                                 data-prio="{{$elem.Priority}}"
                                 data-desc="{{$elem.Description}}"
+                                data-project="{{$elem.Project}}"
                                 data-reqstatus="{{$elem.Status}}">
                                 <span class="glyphicon glyphicon-edit"></span>
                             </a>
@@ -104,9 +107,9 @@
     </div> <!-- container fluid -->
 
 <!-- Add modals -->
-{{template "add_req_modal"}}
+{{template "add_req_modal" .Projects}}
 {{template "view_req_modal"}}
-{{template "modify_req_modal"}}
+{{template "modify_req_modal" .Projects}}
 {{template "remove_req_modal"}}
 <!-- End of Add modals -->
     <!-- include jQuery 2.x & plugins -->
@@ -143,6 +146,7 @@
         modal.find('.modal-body #short').text(button.data('short'));
         modal.find('.modal-body #priority').text(button.data('prio'));
         modal.find('.modal-body #reqstatus').text(button.data('reqstatus'));
+        modal.find('.modal-body #project').text(button.data('project'));
         modal.find('.modal-body #description').val(button.data('desc'));
         modal.find('.modal-body #created').text(button.data('created'));
         modal.find('.modal-body #modified').text(button.data('modified'));
@@ -164,6 +168,7 @@
         modal.find('.modal-body #priority').val(button.data('prio'));
         modal.find('.modal-body #reqstatus').val(button.data('reqstatus'));
         modal.find('.modal-body #description').val(button.data('desc'));
+        modal.find('.modal-body #project').val(button.data('project'));
         modal.find('.modal-body #created').val(created);
         modal.find('.modal-body #modified').val(modified);
         modal.find('.modal-body #createdm').text(created);
@@ -221,7 +226,6 @@
         <div class="row">
             <h4 class="modal-title col-sm-8" id="addReqModalLabel">Add a New Requirement</h4>
             <button type="button" class="btn btn-primary btn-sm col-sm-2" id="addbtn">Add</button>
-                    <!--onclick="postForm('add_req_form', '/requirement'); $('#addReqModal').modal('hide');">Add</button>-->
             <button type="button" class="btn btn-default btn-sm col-sm-2" data-dismiss="modal">Cancel</button>
         </div> <!-- row -->
     </div> <!-- container-fluid -->
@@ -253,12 +257,26 @@
                 </select>
                 </div>
             </div>
-             <div class="form-group form-group-sm">
+            <div class="form-group form-group-sm">
                 <label for="reqstatus" class="col-sm-2 control-label">Status</label>
                 <div class="col-sm-10">
                     <!-- this is forced; only shown here as label for user to know -->
                     <input type="hidden"  id="reqstatus" name="reqstatus" value="New">
                     <label  class="form-control">New</label>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label for="project" class="col-sm-2 control-label">Project</label>
+                <div class="col-sm-10">
+                    <select class="form-control" id="project" name="project">
+            {{if .}}
+                {{range $proj := .}}
+                        <option value="{{$proj.Name}} [{{$proj.Short}}]">{{$proj.Name}} [{{$proj.Short}}]</option>
+                {{end}}
+            {{end}}
+                        <option value="Not Relevant">Not Relevant</option>
+                        <option value="Unknown" selected>Unknown</option>
+                    </select>
                 </div>
             </div>
             <div class="form-group form-group-sm">
@@ -313,6 +331,12 @@
                 <label for="reqstatus" class="col-sm-2 control-label">Status</label>
                 <div class="col-sm-10">
                     <label class="form-control" id="reqstatus" name="reqstatus">
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
+                <label for="project" class="col-sm-2 control-label">Project</label>
+                <div class="col-sm-10">
+                    <label class="form-control" id="project" name="project">
                 </div>
             </div>
             <div class="form-group form-group-sm">
@@ -392,6 +416,20 @@
                 </div>
             </div>
             <div class="form-group form-group-sm">
+                <label for="project" class="col-sm-2 control-label">Project</label>
+                <div class="col-sm-10">
+                    <select class="form-control" id="project" name="project">
+            {{if .}}
+                {{range $proj := .}}
+                        <option value="{{$proj.Name}} [{{$proj.Short}}]">{{$proj.Name}} [{{$proj.Short}}]</option>
+                {{end}}
+            {{end}}
+                        <option value="Not Relevant">Not Relevant</option>
+                        <option value="Unknown">Unknown</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group form-group-sm">
                 <label for="description" class="col-sm-2 control-label">Description</label>
                 <div class="col-sm-offset-10">&nbsp;</div>
                 <div class="col-sm-12">
@@ -447,7 +485,8 @@
                     <tr>
                         <th class="col-sm-1">#</th>
                         <th class="col-sm-1">Short</th>
-                        <th class="col-sm-6">Name</th>
+                        <th class="col-sm-4">Name</th>
+                        <th class="col-sm-2">Project</th>
                         <th class="col-sm-2">Priority</th>
                         <th class="col-sm-1">Status</th>
                         <th class="col-sm-1 text-right">Actions</th>

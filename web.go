@@ -309,12 +309,12 @@ func requirementHandler(app *appinfo) http.Handler {
 		switch r.Method {
 
 		case "GET":
-			if err = reqHTTPGetHandler("", w, r, app); err != nil {
+			if err = reqGetHandler("", w, r, app); err != nil {
 				Errorf(app.log, "Requirement HTTP GET %q", err.Error())
 			}
 
 		case "POST":
-			if err = reqHTTPPostHandler(w, r, app); err != nil {
+			if err = reqPostHandler(w, r, app); err != nil {
 				Errorf(app.log, "Requirement HTTP POST %q", err.Error())
 			}
 			// unconditionally reroute to main requirements page
@@ -342,7 +342,7 @@ func requirementHandler(app *appinfo) http.Handler {
 }
 
 // This is HTTP POST handler for requirements.
-func reqHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func reqPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	id := mux.Vars(r)["id"]
 	cmd := mux.Vars(r)["cmd"]
@@ -390,9 +390,11 @@ func parseReqFormValues(r *http.Request) *Requirement {
 	desc := strings.TrimSpace(r.FormValue("description"))
 	created := strings.TrimSpace(r.FormValue("created"))
 	modified := strings.TrimSpace(r.FormValue("modified"))
+    project := strings.TrimSpace(r.FormValue("project"))
 
 	req := NewRequirement(short, name)
 	req.Description = desc
+    req.Project = project
 	req.Status = core.ReqStatusFromString(status)
 	req.Priority = core.PriorityFromString(prio)
 	req.Created = Timestamp(created)
@@ -401,7 +403,7 @@ func parseReqFormValues(r *http.Request) *Requirement {
 }
 
 // This is HTTP GET handler for requirements.
-func reqHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func reqGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	reqs, err := app.dbconn.GetRequirements(qry)
 	if err != nil {
@@ -411,9 +413,10 @@ func reqHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *
 	// create ad-hoc struct to be sent to page template
 	var web = struct {
 		Reqs  []*Requirement
+        Projects []*Project
 		Num   int
 		Ptype string
-	}{reqs, len(reqs), "reqs"}
+	}{reqs, app.Projects, len(reqs), "reqs"}
 
 	return renderPage("requirements", web, app, w, r)
 }
@@ -427,7 +430,7 @@ func searchHandler(app *appinfo) http.Handler {
 		switch r.Method {
 
 		case "POST":
-			if err = searchHTTPPostHandler(w, r, app); err != nil {
+			if err = searchPostHandler(w, r, app); err != nil {
 				Errorf(app.log, "Search HTTP POST %q", err.Error())
 			}
 
@@ -441,7 +444,7 @@ func searchHandler(app *appinfo) http.Handler {
 }
 
 // This is HTTP POST handler for searches.
-func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func searchPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	qry := strings.TrimSpace(r.FormValue("search-string"))
 	ptype := strings.TrimSpace(r.FormValue("search-type"))
@@ -458,7 +461,7 @@ func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo)
 		err = caseHTTPGetHandler(qry, w, r, app)
 
 	case "reqs":
-		err = reqHTTPGetHandler(qry, w, r, app)
+		err = reqGetHandler(qry, w, r, app)
 
 	case "projects":
 		err = projGetHandler(qry, w, r, app)
