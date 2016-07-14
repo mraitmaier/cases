@@ -89,7 +89,6 @@ func registerHandlers(app *appinfo) {
 	r.Handle("/requirement/{id}/{cmd}", requirementHandler(app))
 	r.Handle("/project", projectHandler(app))
 	r.Handle("/project/{id}/{cmd}", projectHandler(app))
-
 	r.Handle("/search", searchHandler(app))
 	r.Handle("/err404", err404Handler(app))
 	r.NotFoundHandler = err404Handler(app)
@@ -125,13 +124,13 @@ func caseHandler(app *appinfo) http.Handler {
 		switch r.Method {
 
 		case "GET":
-			if err = caseHTTPGetHandler("", w, r, app); err != nil {
+			if err = caseGetHandler("", w, r, app); err != nil {
 				Errorf(app.log, "Cases HTTP GET %q", err.Error())
 			}
 
 		case "POST":
 
-			if err = caseHTTPPostHandler(w, r, app); err != nil {
+			if err = casePostHandler(w, r, app); err != nil {
 				Errorf(app.log, "Cases HTTP POST %q", err.Error())
 			}
 			// unconditionally reroute to main test cases page
@@ -159,7 +158,7 @@ func caseHandler(app *appinfo) http.Handler {
 }
 
 // This is HTTP POST handler for test cases.
-func caseHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func casePostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	id := mux.Vars(r)["id"]
 	cmd := mux.Vars(r)["cmd"]
@@ -242,7 +241,7 @@ func casesGetReqIDs(app *appinfo) []string {
 }
 
 // This is HTTP GET handler for test cases.
-func caseHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func caseGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	c, err := app.dbconn.GetCases(qry)
 	if err != nil {
@@ -458,7 +457,7 @@ func searchPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) err
 	switch strings.ToLower(ptype) {
 
 	case "cases":
-		err = caseHTTPGetHandler(qry, w, r, app)
+		err = caseGetHandler(qry, w, r, app)
 
 	case "reqs":
 		err = reqGetHandler(qry, w, r, app)
