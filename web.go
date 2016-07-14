@@ -109,8 +109,9 @@ func renderPage(name string, web interface{}, aa *appinfo, w http.ResponseWriter
 	if err = aa.templates.ExecuteTemplate(w, name, web); err != nil {
 		Errorf(aa.log, "Cannot display %q page, redirecting to 404", name)
 		http.Redirect(w, r, "/err404", http.StatusFound)
-	}
-	Infof(aa.log, "Displaying %q page, everything OK", name)
+	} else {
+	    Infof(aa.log, "Displaying %q page, everything OK", name)
+    }
 	return err
 }
 
@@ -457,6 +458,9 @@ func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo)
 	case "reqs":
 		err = reqHTTPGetHandler(qry, w, r, app)
 
+	case "projects":
+		err = projGetHandler(qry, w, r, app)
+
 	default:
 		// just render the /index page
 		renderPage("index", nil, app, w, r)
@@ -464,7 +468,7 @@ func searchHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo)
 	return err
 }
 
-// This is handler that handler the "/project" URL.
+// This is handler that handles the "/project" URL.
 func projectHandler(app *appinfo) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -474,12 +478,12 @@ func projectHandler(app *appinfo) http.Handler {
 		switch r.Method {
 
 		case "GET":
-			if err = projHTTPGetHandler("", w, r, app); err != nil {
+			if err = projGetHandler("", w, r, app); err != nil {
 				Errorf(app.log, "Project HTTP GET %q", err.Error())
 			}
 
 		case "POST":
-			if err = projHTTPPostHandler(w, r, app); err != nil {
+			if err = projPostHandler(w, r, app); err != nil {
 				Errorf(app.log, "Project HTTP POST %q", err.Error())
 			}
 			// unconditionally reroute to main project page
@@ -507,7 +511,7 @@ func projectHandler(app *appinfo) http.Handler {
 }
 
 // This is HTTP POST handler for projects.
-func projHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
+func projPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	id := mux.Vars(r)["id"]
 	cmd := mux.Vars(r)["cmd"]
@@ -545,24 +549,24 @@ func projHTTPPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) e
 	return err
 }
 
-// Helper function that parses the '/project' POST request values and creates a new instance of Project 
+// Helper function that parses the '/project' POST request values and creates a new instance of Project
 func parseProjFormValues(r *http.Request) *Project {
 
 	short := strings.TrimSpace(r.FormValue("short"))
-	name := strings.TrimSpace(r.FormValue("name"))
+	name := strings.TrimSpace(r.FormValue("pname"))
 	desc := strings.TrimSpace(r.FormValue("description"))
 	created := strings.TrimSpace(r.FormValue("created"))
 	modified := strings.TrimSpace(r.FormValue("modified"))
 
-	p := NewProject(short, name)
+	p := NewProject(name, short)
 	p.Description = desc
 	p.Created = Timestamp(created)
 	p.Modified = Timestamp(modified)
 	return p
 }
 
-// This is HTTP GET handler for projects 
-func projHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
+// This is HTTP GET handler for projects
+func projGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
 	p, err := app.dbconn.GetProjects(qry)
 	if err != nil {
@@ -571,11 +575,9 @@ func projHTTPGetHandler(qry string, w http.ResponseWriter, r *http.Request, app 
 	}
 	// create ad-hoc struct to be sent to page template
 	var web = struct {
-		Projects  []*Project
-		Num   int
-		Ptype string
+		Projects []*Project
+		Num      int
+		Ptype    string
 	}{p, len(p), "projects"}
-
 	return renderPage("projects", web, app, w, r)
 }
-

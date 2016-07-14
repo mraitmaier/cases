@@ -47,7 +47,7 @@ func (a *appinfo) Cleanup() {
 
 	fmt.Println("Closing connection to DB.")
 	CloseDB(a.dbconn)
-	fmt.Printf("Closing log file %q.", a.LogFilename)
+	fmt.Printf("Closing log file '%s'.", a.LogFilename)
 	CloseLogFile(a.logfile)
 }
 
@@ -90,7 +90,7 @@ func Init(app *appinfo) {
 		panic(">> Log file cannot be created. Exiting...")
 	}
 	Info(app.log, "Log successfully created")
-	fmt.Printf("Logging to %q.\n", app.LogFilename)
+	fmt.Printf("Logging to '%s'.\n", app.LogFilename)
 
 	var cfg *Cfg
 	if cfg, err = readCfg(DefConfigFileName); err != nil {

@@ -52,7 +52,7 @@ type MongoDBConnection struct {
 	Session *mgo.Session
 }
 
-//
+// NewMongoDBConnection creates a new Mongo DB connection
 func NewMongoDBConnection() *MongoDBConnection {
 	return &MongoDBConnection{
 		Name:    "",
@@ -124,6 +124,12 @@ func (cn *MongoDBConnection) EnsureIndexes() error {
 	err = coll.EnsureIndex(rix1)
 	err = coll.EnsureIndex(rix2)
 	err = coll.EnsureIndex(rix3)
+	err = coll.EnsureIndex(wcix)
+
+	// the projets collection indexes
+	coll = cn.Session.DB(cn.Name).C("projects")
+	pix1 := mgo.Index{Key: []string{"short"}, Unique: true, Background: true, Sparse: true}
+	err = coll.EnsureIndex(pix1)
 	err = coll.EnsureIndex(wcix)
 
 	return err
@@ -388,13 +394,13 @@ type Project struct {
 }
 
 // NewProject creates a new instance of Project from minimum of mandatory information.
-func NewProject(short, name string) *Project{
+func NewProject(short, name string) *Project {
 	t := NewTimestamp()
 	return &Project{
-		ID:          bson.NewObjectId(),
-		Project: *core.NewProject(short,name),
-		Created:     t,
-		Modified:    t,
+		ID:       bson.NewObjectId(),
+		Project:  *core.NewProject(short, name),
+		Created:  t,
+		Modified: t,
 	}
 }
 
@@ -415,7 +421,7 @@ func (cn *MongoDBConnection) GetProjects(srch string) ([]*Project, error) {
 	return p, err
 }
 
-// GetProjct returns a particular item (with given ID) from the "projects" collection.
+// GetProject returns a particular item (with given ID) from the "projects" collection.
 func (cn *MongoDBConnection) GetProject(id string) (*Project, error) {
 
 	dblock.Lock()
@@ -446,7 +452,7 @@ func (cn *MongoDBConnection) InsertProject(p *Project) error {
 	return nil
 }
 
-// Deleteproject removes a project from DB.
+// DeleteProject removes a project from DB.
 func (cn *MongoDBConnection) DeleteProject(id string) error {
 
 	dblock.Lock()
