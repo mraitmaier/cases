@@ -52,7 +52,7 @@ type MongoDBConnection struct {
 	Session *mgo.Session
 }
 
-//
+// NewMongoDBConnection creates a new Mongo DB connection
 func NewMongoDBConnection() *MongoDBConnection {
 	return &MongoDBConnection{
 		Name:    "",
@@ -124,6 +124,12 @@ func (cn *MongoDBConnection) EnsureIndexes() error {
 	err = coll.EnsureIndex(rix1)
 	err = coll.EnsureIndex(rix2)
 	err = coll.EnsureIndex(rix3)
+	err = coll.EnsureIndex(wcix)
+
+	// the projets collection indexes
+	coll = cn.Session.DB(cn.Name).C("projects")
+	pix1 := mgo.Index{Key: []string{"short"}, Unique: true, Background: true, Sparse: true}
+	err = coll.EnsureIndex(pix1)
 	err = coll.EnsureIndex(wcix)
 
 	return err
@@ -370,6 +376,120 @@ func (cn *MongoDBConnection) ModifyRequirement(r *Requirement) error {
 	coll := cn.Session.DB(cn.Name).C("requirements")
 	if err := coll.UpdateId(r.ID, r); err != nil {
 		return fmt.Errorf("Error updating a requirement %v: '%s'\n", r.ID, err.Error())
+	}
+	return nil
+}
+
+// Project is a MongoDb wrapper for core Project type.
+type Project struct {
+
+	// ID is a MongoDB object ID
+	ID bson.ObjectId `bson:"_id"`
+
+	// Requirement is a wrapped core Requirement type instance
+	core.Project `bson:",inline"`
+
+	// Created & Modified are the usual DB timestamps
+	Created, Modified Timestamp
+}
+
+// NewProject creates a new instance of Project from minimum of mandatory information.
+func NewProject(short, name string) *Project {
+	t := NewTimestamp()
+	return &Project{
+		ID:       bson.NewObjectId(),
+		Project:  *core.NewProject(short, name),
+		Created:  t,
+		Modified: t,
+	}
+}
+
+// GetProjects returns all items from the "projects" collection in the DB.
+func (cn *MongoDBConnection) GetProjects(srch string) ([]*Project, error) {
+
+	dblock.Lock()
+	defer dblock.Unlock()
+
+	var p []*Project
+	var err error
+	coll := cn.Session.DB(cn.Name).C("projects")
+	if srch == "" {
+		err = coll.Find(bson.D{}).All(&p)
+	} else {
+		err = coll.Find(bson.M{"$text": bson.M{"$search": srch}}).All(&p)
+	}
+	return p, err
+}
+
+// GetProject returns a particular item (with given ID) from the "projects" collection.
+func (cn *MongoDBConnection) GetProject(id string) (*Project, error) {
+
+	dblock.Lock()
+	defer dblock.Unlock()
+
+	p := NewProject("", "")
+	coll := cn.Session.DB(cn.Name).C("projects")
+	if err := coll.Find(bson.M{"_id": MongoStringToID(id)}).One(p); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+// InsertProject adds a new project into DB.
+func (cn *MongoDBConnection) InsertProject(p *Project) error {
+
+	dblock.Lock()
+	defer dblock.Unlock()
+
+	t := NewTimestamp()
+	p.Created = t
+	p.Modified = t
+
+	coll := cn.Session.DB(cn.Name).C("projects")
+	if err := coll.Insert(p); err != nil {
+		return fmt.Errorf("Error inserting a project: %s", err.Error())
+	}
+	return nil
+}
+
+// DeleteProject removes a project from DB.
+func (cn *MongoDBConnection) DeleteProject(id string) error {
+
+	dblock.Lock()
+	defer dblock.Unlock()
+
+	var err error
+	coll := cn.Session.DB(cn.Name).C("projects")
+
+	// first, we need to get the project to be able to clean requiremenst after the project is removed.
+	p := NewProject("", "")
+	if err := coll.Find(bson.M{"_id": MongoStringToID(id)}).One(p); err != nil {
+		return err
+	}
+	name := fmt.Sprintf("%s", p.String)
+
+	// now we remove the project from the DB...
+	if err = coll.RemoveId(MongoStringToID(id)); err != nil {
+		return fmt.Errorf("Error deleting a project '%s': '%s'\n", id, err.Error())
+	}
+
+	// and now we clean the cases collection
+	coll = cn.Session.DB(cn.Name).C("requirements")
+	t := NewTimestamp()
+	_, err = coll.UpdateAll(bson.M{"project": name}, bson.M{"$set": bson.M{"project": "Unknown", "modified": t}})
+	return err
+}
+
+// ModifyProject updates the existing project in the DB.
+func (cn *MongoDBConnection) ModifyProject(p *Project) error {
+
+	dblock.Lock()
+	defer dblock.Unlock()
+
+	p.Modified = NewTimestamp() // update the 'modified' timestamp
+	coll := cn.Session.DB(cn.Name).C("projects")
+	if err := coll.UpdateId(p.ID, p); err != nil {
+		return fmt.Errorf("Error updating a project %v: '%s'\n", p.ID, err.Error())
 	}
 	return nil
 }

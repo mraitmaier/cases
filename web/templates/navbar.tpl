@@ -24,6 +24,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="/case">Test Cases</a></li>
                     <li><a href="/requirement">Requirements</a></li>
+                    <li><a href="/project">Projects</a></li>
 
                     <li>
                         <a href="#" data-toggle="tooltip" data-placement="top" title="About">

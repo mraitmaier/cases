@@ -49,6 +49,14 @@ function addCase() {
 }
 
 //
+function modifyProj(form_id, id) {
+
+    var url = "/project/" + id + '/put';
+    postForm(form_id, url);
+}
+
+
+//
 function modifyReq(form_id, id) {
 
     var url = "/requirement/" + id + '/put';
