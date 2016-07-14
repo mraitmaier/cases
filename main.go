@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+    "gopkg.in/mgo.v2/bson"
 )
 
 // Type appinfo is a global struct that holds all necessary information for application to normally run
@@ -38,6 +39,9 @@ type appinfo struct {
 	// Msg is a text that will be displayed on web page
 	Msg *Message
 
+    // This is a list of Projects that are read at init stage
+    Projects []*Project
+
 	// a debug flag (only for testing purposes)
 	Debug bool
 }
@@ -49,6 +53,30 @@ func (a *appinfo) Cleanup() {
 	CloseDB(a.dbconn)
 	fmt.Printf("Closing log file '%s'.", a.LogFilename)
 	CloseLogFile(a.logfile)
+}
+
+// Update an existing item in pre-loaded list of projects
+func (a *appinfo) updateProject(p *Project) {
+
+    for _, item := range a.Projects {
+        if item.ID == p.ID {
+            *item = *p
+        }
+    }
+}
+
+// Remove an item from pre-loaded list of projects
+func (a *appinfo) removeProject(id bson.ObjectId) {
+
+    newp := make([]*Project, 0)
+
+    for _, item := range a.Projects {
+        if item.ID == id {
+            continue
+        }
+        newp = append(newp, item)
+    }
+    a.Projects = newp
 }
 
 func main() {
@@ -74,8 +102,6 @@ func main() {
 	if err := webStart(app, DefWebRoot); err != nil {
 		return
 	}
-
-	//fmt.Println("Stop.")
 }
 
 // Init is usual application initialization function.
@@ -105,6 +131,13 @@ func Init(app *appinfo) {
 		panic(">> Connection to MongoDB cannot be established.")
 	}
 	Info(app.log, "DB connection successfully established")
+
+    // We now pre-load the projects from DB, so that we don't have to load them all the time; their number 
+    // should not be large and updates quite rare, so we can afford this luxury... 
+    if app.Projects, err = app.dbconn.GetProjects(""); err != nil {
+        Error(app.log, "Pre-loading projects from DB failed")
+    }
+	Info(app.log, "Projects successfully preloaded from DB")
 }
 
 // Message is a

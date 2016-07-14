@@ -523,7 +523,12 @@ func projPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error
 
 	case "":
 		if p := parseProjFormValues(r); p != nil {
+
 			err = app.dbconn.InsertProject(p)
+            // let's update our pre-loaded list of projects also...
+            if app.Projects != nil {
+                app.Projects = append(app.Projects, p)
+            }
 		}
 
 	case "delete":
@@ -533,6 +538,10 @@ func projPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error
 		if err = app.dbconn.DeleteProject(id); err == nil {
 			Infof(app.log, "Project %q successfully deleted", id)
 		}
+        // let's update our pre-loaded list of projects also...
+        if app.Projects != nil {
+            app.removeProject(MongoStringToID(id))
+        }
 
 	case "put":
 		if id == "" {
@@ -543,6 +552,10 @@ func projPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error
 			if err = app.dbconn.ModifyProject(p); err == nil {
 				Infof(app.log, "Project %q successfully updated", p.String(), id)
 			}
+            // let's update our pre-loaded list of projects also...
+            if app.Projects != nil {
+                app.updateProject(p)
+            }
 		}
 
 	default:
@@ -570,11 +583,20 @@ func parseProjFormValues(r *http.Request) *Project {
 // This is HTTP GET handler for projects
 func projGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *appinfo) error {
 
-	p, err := app.dbconn.GetProjects(qry)
-	if err != nil {
-		http.Redirect(w, r, "/err404", http.StatusFound)
-		return fmt.Errorf("Problem getting project from DB: %s", err.Error())
-	}
+    var p []*Project
+    var err error
+
+    // Let's try first with pre-loaded projects data; if it doesn't exist, go to DB 
+    if app.Projects != nil {
+        p = app.Projects
+    } else {
+	    p, err = app.dbconn.GetProjects(qry)
+	    if err != nil {
+		    http.Redirect(w, r, "/err404", http.StatusFound)
+		    return fmt.Errorf("Problem getting project from DB: %s", err.Error())
+	    }
+    }
+
 	// create ad-hoc struct to be sent to page template
 	var web = struct {
 		Projects []*Project
@@ -583,3 +605,4 @@ func projGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *app
 	}{p, len(p), "projects"}
 	return renderPage("projects", web, app, w, r)
 }
+
