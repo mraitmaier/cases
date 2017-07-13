@@ -52,7 +52,7 @@
 
                     <tr class="tbl-single-row" id="proj-row-{{$elem.ID.Hex}}">
                         <td>{{$id}}</td>
-                        <td>{{$elem.Short}}</td>
+                        <td>{{$elem.GlobalID}}</td>
                         <td>{{$elem.Name}}</td>
                         <td>{{$elem.Description}}</td>
                         <td class="text-right">
@@ -61,7 +61,7 @@
                                 data-hexid="{{$elem.ID.Hex}}"
                                 data-created="{{$elem.Created}}"
                                 data-modified="{{$elem.Modified}}"
-                                data-short="{{$elem.Short}}"
+                                data-global-id="{{$elem.GlobalID}}"
                                 data-pname="{{$elem.Name}}"
                                 data-desc="{{$elem.Description}}">
                                 <span class="glyphicon glyphicon-eye-open"></span>
@@ -73,7 +73,7 @@
                                 data-hexid="{{$elem.ID.Hex}}"
                                 data-created="{{$elem.Created}}"
                                 data-modified="{{$elem.Modified}}"
-                                data-short="{{$elem.Short}}"
+                                data-global-id="{{$elem.GlobalID}}"
                                 data-pname="{{$elem.Name}}"
                                 data-desc="{{$elem.Description}}">
                                 <span class="glyphicon glyphicon-edit"></span>
@@ -128,7 +128,7 @@
         modal.find('.modal-title').text('Project Details');
         modal.find('.modal-body #pname').val(name);
         modal.find('.modal-body #hexid').val(button.data('hexid'));
-        modal.find('.modal-body #short').val(button.data('short'));
+        modal.find('.modal-body #global-id').val(button.data('global-id'));
         modal.find('.modal-body #description').val(button.data('desc'));
         modal.find('.modal-body #created').text(button.data('created'));
         modal.find('.modal-body #modified').text(button.data('modified'));
@@ -147,7 +147,7 @@
         modal.find('.modal-title').text('Modify "' + name + '" Details');
         modal.find('.modal-body #pname').val(name);
         modal.find('.modal-body #hexid').val(hexid);
-        modal.find('.modal-body #short').val(button.data('short'));
+        modal.find('.modal-body #global-id').val(button.data('global-id'));
         modal.find('.modal-body #description').val(button.data('desc'));
         modal.find('.modal-body #created').val(created);
         modal.find('.modal-body #modified').val(modified);
@@ -205,10 +205,10 @@
     <div class="modal-body">
       <form id="add_proj_form" class="form-horizontal" method="POST" action="">
           <div class="form-group form-group-sm">
-              <label for="short" class="col-sm-2 control-label">Short Name</label>
+              <label for="global-id" class="col-sm-2 control-label">Global ID</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="short" name="short" placeholder="Short Name" 
-                                   onblur="return validateInput($(this).val(), 'Project Short Name');" required>
+                <input type="text" class="form-control" id="global-id" name="global-id" placeholder="Global ID" 
+                                   onblur="return validateInput($(this).val(), 'Project Global ID');" required>
               </div>
             </div>
             <div class="form-group form-group-sm">
@@ -249,9 +249,9 @@
     <div class="modal-body">
       <form id="view_proj_form" class="form-horizontal">
           <div class="form-group form-group-sm">
-              <label for="short" class="col-sm-2 control-label">Short Name</label>
+              <label for="global-id" class="col-sm-2 control-label">Global ID</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="short" name="short" readonly>
+                <input type="text" class="form-control" id="global-id" name="global-id" readonly>
               </div>
             </div>
             <div class="form-group form-group-sm">
@@ -304,10 +304,10 @@
       <form id="modify_proj_form" class="form-horizontal">
             <input type="hidden" id="hexid" name="hexid">
           <div class="form-group form-group-sm">
-              <label for="short" class="col-sm-2 control-label">Short Name</label>
+              <label for="global-id" class="col-sm-2 control-label">Global ID</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="short" name="short" 
-                                   onblur="return validateInput($(this).val(), 'Project Short Name');" required>
+                <input type="text" class="form-control" id="global-id" name="global-id" 
+                                   onblur="return validateInput($(this).val(), 'Project Global ID');" required>
               </div>
             </div>
             <div class="form-group form-group-sm">
@@ -372,7 +372,7 @@
 {{define "proj-table-header"}}
                     <tr>
                         <th class="col-sm-1">#</th>
-                        <th class="col-sm-1">Short</th>
+                        <th class="col-sm-1">Global ID</th>
                         <th class="col-sm-3">Name</th>
                         <th class="col-sm-6">Description</th>
                         <th class="col-sm-1 text-right">Actions</th>

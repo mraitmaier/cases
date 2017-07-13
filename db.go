@@ -118,7 +118,7 @@ func (cn *MongoDBConnection) EnsureIndexes() error {
 
 	// the requirements collection indexes
 	coll = cn.Session.DB(cn.Name).C("requirements")
-	rix3 := mgo.Index{Key: []string{"short"}, Unique: true, Background: true, Sparse: true}
+	rix3 := mgo.Index{Key: []string{"globalid"}, Unique: true, Background: true, Sparse: true}
 	rix1 := mgo.Index{Key: []string{"priority"}, Background: true, Sparse: true}
 	rix2 := mgo.Index{Key: []string{"status"}, Background: true, Sparse: true}
 	err = coll.EnsureIndex(rix1)
@@ -128,7 +128,7 @@ func (cn *MongoDBConnection) EnsureIndexes() error {
 
 	// the projets collection indexes
 	coll = cn.Session.DB(cn.Name).C("projects")
-	pix1 := mgo.Index{Key: []string{"short"}, Unique: true, Background: true, Sparse: true}
+	pix1 := mgo.Index{Key: []string{"globalid"}, Unique: true, Background: true, Sparse: true}
 	err = coll.EnsureIndex(pix1)
 	err = coll.EnsureIndex(wcix)
 
@@ -275,11 +275,11 @@ type Requirement struct {
 }
 
 // NewRequirement creates a new instance of Requirement from minimum of mandatory information.
-func NewRequirement(short, name string) *Requirement {
+func NewRequirement(id, name string) *Requirement {
 
 	t := NewTimestamp()
 	r := core.NewRequirement()
-	r.Short = short
+	r.GlobalID = id
 	r.Name = name
 	return &Requirement{
 		ID:          bson.NewObjectId(),
@@ -352,7 +352,7 @@ func (cn *MongoDBConnection) DeleteRequirement(id string) error {
 	if err := coll.Find(bson.M{"_id": MongoStringToID(id)}).One(req); err != nil {
 		return err
 	}
-	name := fmt.Sprintf("%s %s", req.Short, req.Name)
+	name := fmt.Sprintf("%s %s", req.GlobalID, req.Name)
 
 	// now we remove the requirement from the DB...
 	if err = coll.RemoveId(MongoStringToID(id)); err != nil {
@@ -394,11 +394,11 @@ type Project struct {
 }
 
 // NewProject creates a new instance of Project from minimum of mandatory information.
-func NewProject(short, name string) *Project {
+func NewProject(id, name string) *Project {
 	t := NewTimestamp()
 	return &Project{
 		ID:       bson.NewObjectId(),
-		Project:  *core.NewProject(short, name),
+		Project:  *core.NewProject(id, name),
 		Created:  t,
 		Modified: t,
 	}

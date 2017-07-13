@@ -68,8 +68,8 @@ func ReqStatusFromString(val string) ReqStatus {
 // Requirement is a representation of the feature requirement.
 type Requirement struct {
 
-	// Short name of the requirement
-	Short string
+	// GlobalID name of the requirement
+	GlobalID string
 
 	// Name of the requirement
 	Name string
@@ -85,28 +85,48 @@ type Requirement struct {
 
     // Every requirement belongs to a project. Only a string code is kept here.
     Project string
+
+    //
+    Release string
+
+    //
+    Assigned string
+
+    //
+    RelatedTo string
+
+    //
+    Tags []string
 }
 
 // CreateRequirement returns a new instance of Requirement type from the known data.
-func CreateRequirement(short, name, desc string, prio Priority, status ReqStatus) *Requirement {
+func CreateRequirement(id, name, desc string, prio Priority, status ReqStatus) *Requirement {
 	return &Requirement{
-		Short:       short,
+		GlobalID:       id,
 		Name:        name,
 		Description: desc,
 		Priority:    prio,
 		Status:      status,
         Project: "",
+        Release: "",
+        Assigned: "",
+        RelatedTo: "",
+        Tags: make([]string, 0),
 	}
 }
 
 // NewRequirement returns a new empty instance of Requirement type.
 func NewRequirement() *Requirement {
 	return &Requirement{
-		Short:       "",
+		GlobalID:       "",
 		Name:        "",
 		Description: "",
 		Priority:    NormalPriority,
 		Status:      StatusUnknown,
         Project: "",
+        Release: "",
+        Assigned: "",
+        RelatedTo: "",
+        Tags: make([]string, 0),
 	}
 }

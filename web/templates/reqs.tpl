@@ -52,7 +52,7 @@
 
                     <tr class="tbl-single-row" id="req-row-{{$elem.ID.Hex}}">
                         <td>{{$id}}</td>
-                        <td>{{$elem.Short}}</td>
+                        <td>{{$elem.GlobalID}}</td>
                         <td>{{$elem.Name}}</td>
                         <td>{{$elem.Project}}</td>
                         <td>{{$elem.Priority}}</td>
@@ -63,7 +63,7 @@
                                 data-hexid="{{$elem.ID.Hex}}"
                                 data-created="{{$elem.Created}}"
                                 data-modified="{{$elem.Modified}}"
-                                data-short="{{$elem.Short}}"
+                                data-global-id="{{$elem.GlobalID}}"
                                 data-reqname="{{$elem.Name}}"
                                 data-prio="{{$elem.Priority}}"
                                 data-reqstatus="{{$elem.Status}}"
@@ -78,7 +78,7 @@
                                 data-hexid="{{$elem.ID.Hex}}"
                                 data-created="{{$elem.Created}}"
                                 data-modified="{{$elem.Modified}}"
-                                data-short="{{$elem.Short}}"
+                                data-global-id="{{$elem.GlobalID}}"
                                 data-reqname="{{$elem.Name}}"
                                 data-prio="{{$elem.Priority}}"
                                 data-desc="{{$elem.Description}}"
@@ -143,7 +143,7 @@
         modal.find('.modal-title').text('The "' + name + '" Details');
         modal.find('.modal-body #name').text(name);
         modal.find('.modal-body #hexid').val(button.data('hexid'));
-        modal.find('.modal-body #short').text(button.data('short'));
+        modal.find('.modal-body #global-id').text(button.data('global-id'));
         modal.find('.modal-body #priority').text(button.data('prio'));
         modal.find('.modal-body #reqstatus').text(button.data('reqstatus'));
         modal.find('.modal-body #project').text(button.data('project'));
@@ -164,7 +164,7 @@
         modal.find('.modal-title').text('Modify "' + name + '" Details');
         modal.find('.modal-body #name').val(name);
         modal.find('.modal-body #hexid').val(button.data('hexid'));
-        modal.find('.modal-body #short').val(button.data('short'));
+        modal.find('.modal-body #global-id').val(button.data('global-id'));
         modal.find('.modal-body #priority').val(button.data('prio'));
         modal.find('.modal-body #reqstatus').val(button.data('reqstatus'));
         modal.find('.modal-body #description').val(button.data('desc'));
@@ -234,9 +234,9 @@
     <div class="modal-body">
       <form id="add_req_form" class="form-horizontal" method="post">
           <div class="form-group form-group-sm">
-              <label for="short" class="col-sm-2 control-label">Short Name</label>
+              <label for="global-id" class="col-sm-2 control-label">Global ID</label>
               <div class="col-sm-10">
-                    <input type="text" class="form-control" id="short" name="short" placeholder="Short Name" 
+                    <input type="text" class="form-control" id="global-id" name="global-id" placeholder="Global ID" 
                                        minlength="2" required>
               </div>
             </div>
@@ -271,7 +271,7 @@
                     <select class="form-control" id="project" name="project">
             {{if .}}
                 {{range $proj := .}}
-                        <option value="{{$proj.Name}} [{{$proj.Short}}]">{{$proj.Name}} [{{$proj.Short}}]</option>
+                        <option value="{{$proj.Name}} [{{$proj.GlobalID}}]">{{$proj.Name}} [{{$proj.GlobalID}}]</option>
                 {{end}}
             {{end}}
                         <option value="Not Relevant">Not Relevant</option>
@@ -310,9 +310,9 @@
     <div class="modal-body">
       <form id="view_req_form" class="form-horizontal">
           <div class="form-group form-group-sm">
-              <label for="short" class="col-sm-2 control-label">Short Name</label>
+              <label for="global-id" class="col-sm-2 control-label">Global ID</label>
               <div class="col-sm-10">
-                    <label class="form-control" id="short" name="short">
+                    <label class="form-control" id="global-id" name="global-id">
               </div>
             </div>
             <div class="form-group form-group-sm">
@@ -381,9 +381,9 @@
       <form id="modify_req_form" class="form-horizontal">
             <input type="hidden" id="hexid" name="hexid">
           <div class="form-group form-group-sm">
-              <label for="short" class="col-sm-2 control-label">Short Name</label>
+              <label for="global-id" class="col-sm-2 control-label">Global ID</label>
               <div class="col-sm-10">
-                <input type="text" class="form-control" id="short" name="short" minlength="2" required>
+                <input type="text" class="form-control" id="global-id" name="global-id" minlength="2" required>
               </div>
             </div>
             <div class="form-group form-group-sm">
@@ -421,7 +421,7 @@
                     <select class="form-control" id="project" name="project">
             {{if .}}
                 {{range $proj := .}}
-                        <option value="{{$proj.Name}} [{{$proj.Short}}]">{{$proj.Name}} [{{$proj.Short}}]</option>
+                        <option value="{{$proj.Name}} [{{$proj.GlobalID}}]">{{$proj.Name}} [{{$proj.GlobalID}}]</option>
                 {{end}}
             {{end}}
                         <option value="Not Relevant">Not Relevant</option>
@@ -484,7 +484,7 @@
 {{define "req-table-header"}}
                     <tr>
                         <th class="col-sm-1">#</th>
-                        <th class="col-sm-1">Short</th>
+                        <th class="col-sm-1">Global ID</th>
                         <th class="col-sm-4">Name</th>
                         <th class="col-sm-2">Project</th>
                         <th class="col-sm-2">Priority</th>

@@ -144,7 +144,7 @@ func Info(log *log.Logger, msg string) { log.Printf(fmt.Sprintf("INFO %s", msg))
 func Notice(log *log.Logger, msg string) { log.Printf(fmt.Sprintf("NOTICE %s", msg)) }
 
 // Warning is ...
-func Warning(log *log.Logger, msg string) { log.Printf(fmt.Sprintf("WARNING %s", msg)) }
+func Warning(log *log.Logger, msg string) { log.Printf(fmt.Sprintf("WARN %s", msg)) }
 
 // Error is ...
 func Error(log *log.Logger, msg string) { log.Printf(fmt.Sprintf("ERROR %s", msg)) }

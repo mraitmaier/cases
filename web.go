@@ -235,7 +235,7 @@ func casesGetReqIDs(app *appinfo) []string {
 	}
 
 	for _, item := range r {
-		reqs = append(reqs, fmt.Sprintf("%s  %s", item.Short, item.Name))
+		reqs = append(reqs, fmt.Sprintf("%s  %s", item.GlobalID, item.Name))
 	}
 	return reqs
 }
@@ -369,7 +369,7 @@ func reqPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error 
 		if req := parseReqFormValues(r); req != nil {
 			req.ID = MongoStringToID(id)
 			if err = app.dbconn.ModifyRequirement(req); err == nil {
-				Infof(app.log, "Requirement '%s [%s]' successfully updated", req.Short, id)
+				Infof(app.log, "Requirement '%s [%s]' successfully updated", req.GlobalID, id)
 			}
 		}
 
@@ -382,7 +382,7 @@ func reqPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error 
 // Helper function that parses the '/requirement' POST request values and creates a new instance of Requirement.
 func parseReqFormValues(r *http.Request) *Requirement {
 
-	short := strings.TrimSpace(r.FormValue("short"))
+	id := strings.TrimSpace(r.FormValue("global-id"))
 	name := strings.TrimSpace(r.FormValue("name"))
 	prio := strings.TrimSpace(r.FormValue("priority"))
 	status := strings.TrimSpace(r.FormValue("reqstatus"))
@@ -391,7 +391,7 @@ func parseReqFormValues(r *http.Request) *Requirement {
 	modified := strings.TrimSpace(r.FormValue("modified"))
     project := strings.TrimSpace(r.FormValue("project"))
 
-	req := NewRequirement(short, name)
+	req := NewRequirement(id, name)
 	req.Description = desc
     req.Project = project
 	req.Status = core.ReqStatusFromString(status)
@@ -569,13 +569,13 @@ func projPostHandler(w http.ResponseWriter, r *http.Request, app *appinfo) error
 // Helper function that parses the '/project' POST request values and creates a new instance of Project
 func parseProjFormValues(r *http.Request) *Project {
 
-	short := strings.TrimSpace(r.FormValue("short"))
+	id := strings.TrimSpace(r.FormValue("global-id"))
 	name := strings.TrimSpace(r.FormValue("pname"))
 	desc := strings.TrimSpace(r.FormValue("description"))
 	created := strings.TrimSpace(r.FormValue("created"))
 	modified := strings.TrimSpace(r.FormValue("modified"))
 
-	p := NewProject(name, short)
+	p := NewProject(name, id)
 	p.Description = desc
 	p.Created = Timestamp(created)
 	p.Modified = Timestamp(modified)
@@ -588,7 +588,7 @@ func projGetHandler(qry string, w http.ResponseWriter, r *http.Request, app *app
     var p []*Project
     var err error
 
-    // Let's try first with pre-loaded projects data; if it doesn't exist, go to DB 
+    // Let's try first with pre-loaded projects data; if it doesn't exist, go to DB
     if app.Projects != nil {
         p = app.Projects
     } else {
