@@ -73,7 +73,7 @@ func webStart(app *appinfo, wwwpath string) (err error) {
 	http.ListenAndServe(":8888", context.ClearHandler(http.DefaultServeMux))
 	//http.ListenAndServeTLS(":8888", "./web/mycert1.cer", "./web/mycert1.key",
 	//http.ListenAndServeTLS(":8888", "./web/server.pem", "./web/server.key", context.ClearHandler(http.DefaultServeMux))
-	Info(app.log, "WebServer up & running")
+    Info(app.log, "WebServer up & running: serving on port 8888")
 	return nil
 }
 
