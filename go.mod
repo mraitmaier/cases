@@ -1,4 +1,4 @@
-module cases
+module github.com/mraitmaier/cases
 
 go 1.18
 
