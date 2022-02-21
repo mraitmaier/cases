@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cases/core"
+	"github.com/mraitmaier/cases/core"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/context"

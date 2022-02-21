@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cases/core"
+	"github.com/mraitmaier/cases/core"
 	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
